@@ -20,6 +20,7 @@
 package org.balau.fakedawn;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
@@ -125,7 +126,10 @@ public class Preferences extends Activity implements OnClickListener {
 			
 			editor.putBoolean("enabled", true);
 			editor.commit();
-			
+
+			Intent updateAlarm = new Intent(getApplicationContext(), Alarm.class);
+			getApplicationContext().startService(updateAlarm);
+
 			this.finish();
 		}
 	}
