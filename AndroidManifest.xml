@@ -16,6 +16,7 @@
             </intent-filter>
         </activity>
         <service android:name="Alarm"></service>
+        <activity android:name="Dawn" android:taskAffinity="@string/affinity_dawn"></activity>
     </application>
 
 </manifest>
