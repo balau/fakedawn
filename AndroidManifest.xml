@@ -5,6 +5,7 @@
     android:versionName="1.0" >
 
     <uses-sdk android:minSdkVersion="10" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
     <application
         android:icon="@drawable/ic_launcher"
@@ -17,6 +18,11 @@
         </activity>
         <service android:name="Alarm"></service>
         <activity android:name="Dawn" android:taskAffinity="@string/affinity_dawn"></activity>
+        <receiver android:name="StartAtBoot">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
