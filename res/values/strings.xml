@@ -3,6 +3,6 @@
 
     <string name="hello">Hello World!</string>
     <string name="app_name">Fake Dawn</string>
-    <string name="affinity_preferences">Preferences</string>
+    <string name="affinity_preferences">org.balau.fakedawn.Preferences</string>
 
 </resources>
