@@ -48,7 +48,8 @@ public class Alarm extends Service {
 				getApplicationContext(), 
 				0, 
 				openDawn,
-				0);	}
+				0);	
+	}
 
 	/* (non-Javadoc)
 	 * @see android.app.Service#onStartCommand(android.content.Intent, int, int)
@@ -78,7 +79,7 @@ public class Alarm extends Service {
 					nextAlarmTime.getTimeInMillis(),
 					AlarmManager.INTERVAL_DAY,
 					getDawnPendingIntent());
-			Log.d("FakeDawn", String.format("Alarm set for %s.", nextAlarmTime.toString()));	
+			Log.d("FakeDawn", String.format("Alarm set."));	
 
 		}
 		// If we get killed, after returning from here, restart
