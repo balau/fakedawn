@@ -92,8 +92,12 @@ public class Dawn extends Activity implements OnClickListener {
 		if(grey_level > 0xFF) grey_level = 0xFF;
 		grey_rgb = 0xFF000000 + (grey_level * 0x010101);
 		findViewById(R.id.dawn_background).setBackgroundColor(grey_rgb);
+		Log.d("FakeDawn", "Brightness updated.");		
 		if(System.currentTimeMillis() >= m_alarm_end_millis)
+		{
 			m_timer.cancel();
+			Log.d("FakeDawn", "Timer stopped.");
+		}
 	}
 
 	/* (non-Javadoc)
@@ -157,22 +161,42 @@ public class Dawn extends Activity implements OnClickListener {
 				}
 				updateBrightness();
 
-				m_timer.schedule(new TimerTask() {
+				m_timer.schedule(
+						new TimerTask() {
 
-					@Override
-					public void run() {
-						runOnUiThread(new Runnable() {
-
+							@Override
 							public void run() {
-								updateBrightness();
+								runOnUiThread(
+										new Runnable() {
+											public void run() {
+												updateBrightness();
+											}
+										});
 							}
-						});
-					}
-				}, m_timer_tick_seconds*1000, m_timer_tick_seconds*1000);
+						}, m_timer_tick_seconds*1000, m_timer_tick_seconds*1000);
 			} catch (SettingNotFoundException e) {
 				e.printStackTrace();
 				this.finish();
 			}
 		}
+	}
+
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onPause()
+	 */
+	@Override
+	protected void onPause() {
+		super.onPause();
+		Log.d("FakeDawn", "Dawn Paused.");		
+	}
+
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onStop()
+	 */
+	@Override
+	protected void onStop() {
+		super.onStop();
+		m_timer.cancel();
+		Log.d("FakeDawn", "Dawn Stopped.");
 	}
 }

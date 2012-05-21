@@ -21,6 +21,7 @@ package org.balau.fakedawn;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 
 public class StartAtBoot extends BroadcastReceiver {
 
@@ -33,6 +34,7 @@ public class StartAtBoot extends BroadcastReceiver {
 		{
 			Intent startService = new Intent(context, Alarm.class);			
 			context.startService(startService);
+			Log.d("FakeDawn", "Alarm started.");		
 		}
 	}
 

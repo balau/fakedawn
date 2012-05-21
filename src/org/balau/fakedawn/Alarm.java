@@ -27,6 +27,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.IBinder;
+import android.util.Log;
 
 public class Alarm extends Service {
 
@@ -77,6 +78,8 @@ public class Alarm extends Service {
 					nextAlarmTime.getTimeInMillis(),
 					AlarmManager.INTERVAL_DAY,
 					getDawnPendingIntent());
+			Log.d("FakeDawn", String.format("Alarm set for %s.", nextAlarmTime.toString()));	
+
 		}
 		// If we get killed, after returning from here, restart
 		return START_STICKY;
