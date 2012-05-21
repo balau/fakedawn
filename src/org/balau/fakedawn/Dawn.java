@@ -38,8 +38,10 @@ public class Dawn extends Activity implements OnClickListener {
 	private long m_alarm_start_millis;
 	private long m_alarm_end_millis;
 	private boolean m_use_brightness = false;
-	private Timer m_timer = new Timer();
+	private Timer m_timer;
 	private int m_timer_tick_seconds = 10;
+
+	private boolean m_active = false;
 
 	private int m_brightnessMode;
 
@@ -73,30 +75,34 @@ public class Dawn extends Activity implements OnClickListener {
 		int grey_level;
 		int grey_rgb;
 
-		level_percent = 
-				(100 * (System.currentTimeMillis() - m_alarm_start_millis))
-				/ (m_alarm_end_millis - m_alarm_start_millis);
-		if(level_percent < 1) { level_percent = 1; }
-		else if(level_percent > 100) { level_percent = 100; }
-
-		brightness = brightnessStep * level_percent;
-		Log.d("HelloAndroid", String.format("b = %f", brightness));
-		if(m_use_brightness)
+		if(m_active)
 		{
-			WindowManager.LayoutParams layoutParams = getWindow().getAttributes();
-			layoutParams.screenBrightness = brightness;
-			getWindow().setAttributes(layoutParams);
-		}
+			Log.d("FakeDawn", "Updating brightness.");		
+			level_percent = 
+					(100 * (System.currentTimeMillis() - m_alarm_start_millis))
+					/ (m_alarm_end_millis - m_alarm_start_millis);
+			if(level_percent < 1) { level_percent = 1; }
+			else if(level_percent > 100) { level_percent = 100; }
 
-		grey_level = (int)(brightness * (float)0xFF);
-		if(grey_level > 0xFF) grey_level = 0xFF;
-		grey_rgb = 0xFF000000 + (grey_level * 0x010101);
-		findViewById(R.id.dawn_background).setBackgroundColor(grey_rgb);
-		Log.d("FakeDawn", "Brightness updated.");		
-		if(System.currentTimeMillis() >= m_alarm_end_millis)
-		{
-			m_timer.cancel();
-			Log.d("FakeDawn", "Timer stopped.");
+			brightness = brightnessStep * level_percent;
+			Log.d("HelloAndroid", String.format("b = %f", brightness));
+			if(m_use_brightness)
+			{
+				WindowManager.LayoutParams layoutParams = getWindow().getAttributes();
+				layoutParams.screenBrightness = brightness;
+				getWindow().setAttributes(layoutParams);
+			}
+
+			grey_level = (int)(brightness * (float)0xFF);
+			if(grey_level > 0xFF) grey_level = 0xFF;
+			grey_rgb = 0xFF000000 + (grey_level * 0x010101);
+			findViewById(R.id.dawn_background).setBackgroundColor(grey_rgb);
+			Log.d("FakeDawn", "Brightness updated.");		
+			if(System.currentTimeMillis() >= m_alarm_end_millis)
+			{
+				m_timer.cancel();
+				Log.d("FakeDawn", "Timer stopped.");
+			}
 		}
 	}
 
@@ -105,7 +111,6 @@ public class Dawn extends Activity implements OnClickListener {
 	 */
 	@Override
 	protected void onStart() {
-		// TODO Auto-generated method stub
 		super.onStart();
 		SharedPreferences pref = getApplicationContext().getSharedPreferences("main", MODE_PRIVATE);
 		String day;
@@ -160,7 +165,9 @@ public class Dawn extends Activity implements OnClickListener {
 					}
 				}
 				updateBrightness();
+				m_active = true;
 
+				m_timer = new Timer();
 				m_timer.schedule(
 						new TimerTask() {
 
@@ -197,6 +204,25 @@ public class Dawn extends Activity implements OnClickListener {
 	protected void onStop() {
 		super.onStop();
 		m_timer.cancel();
+		m_active = false;
 		Log.d("FakeDawn", "Dawn Stopped.");
+	}
+
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onRestart()
+	 */
+	@Override
+	protected void onRestart() {
+		super.onRestart();
+		Log.d("FakeDawn", "Dawn Restarted.");
+	}
+
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onResume()
+	 */
+	@Override
+	protected void onResume() {
+		super.onResume();
+		Log.d("FakeDawn", "Dawn Resumed.");
 	}
 }
