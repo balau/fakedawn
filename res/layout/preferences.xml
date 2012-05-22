@@ -1,105 +1,145 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content" >
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
 
-    <LinearLayout
+    <ScrollView
+        xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical" >
-
-        <CheckBox
-            android:id="@+id/checkBoxAlarmEnabled"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Alarm Enabled" />
-
-        <TimePicker
-            android:id="@+id/timePicker1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+        android:layout_weight="1000" >
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
+            android:layout_height="match_parent"
+            android:orientation="vertical" >
+
+            <CheckBox
+                android:id="@+id/checkBoxAlarmEnabled"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Dawn Enabled" >
+
+                <requestFocus />
+            </CheckBox>
+
+            <TextView
+                android:id="@+id/textView1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="Dawn Start Time"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+            <TimePicker
+                android:id="@+id/timePicker1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal" />
+
+            <TextView
+                android:id="@+id/textView2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="Dawn Duration"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+            <EditText
+                android:id="@+id/editTextMinutes"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:ems="10"
+                android:hint="Duration in minutes"
+                android:inputType="number"
+                android:text="30" />
 
             <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:orientation="vertical" >
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
 
-                <CheckBox
-                    android:id="@+id/checkBoxMondays"
+                <LinearLayout
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checked="true"
-                    android:text="Mondays" />
+                    android:layout_height="match_parent"
+                    android:orientation="vertical" >
 
-                <CheckBox
-                    android:id="@+id/checkBoxTuesdays"
+                    <CheckBox
+                        android:id="@+id/checkBoxMondays"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="Mondays" />
+
+                    <CheckBox
+                        android:id="@+id/checkBoxTuesdays"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="Tuesdays" />
+
+                    <CheckBox
+                        android:id="@+id/checkBoxWednesdays"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="Wednesdays" />
+
+                    <CheckBox
+                        android:id="@+id/checkBoxThursdays"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="Thursdays" />
+
+                    <CheckBox
+                        android:id="@+id/checkBoxFridays"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="Fridays" />
+                </LinearLayout>
+
+                <LinearLayout
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checked="true"
-                    android:text="Tuesdays" />
+                    android:layout_height="match_parent"
+                    android:orientation="vertical" >
 
-                <CheckBox
-                    android:id="@+id/checkBoxWednesdays"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checked="true"
-                    android:text="Wednesdays" />
+                    <CheckBox
+                        android:id="@+id/checkBoxSaturdays"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Saturdays" />
 
-                <CheckBox
-                    android:id="@+id/checkBoxThursdays"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checked="true"
-                    android:text="Thursdays" />
-
-                <CheckBox
-                    android:id="@+id/checkBoxFridays"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checked="true"
-                    android:text="Fridays" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:orientation="vertical" >
-
-                <CheckBox
-                    android:id="@+id/checkBoxSaturdays"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Saturdays" />
-
-                <CheckBox
-                    android:id="@+id/checkBoxSundays"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Sundays" />
+                    <CheckBox
+                        android:id="@+id/checkBoxSundays"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Sundays" />
+                </LinearLayout>
             </LinearLayout>
         </LinearLayout>
+    </ScrollView>
 
-        <EditText
-            android:id="@+id/editTextMinutes"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ems="10"
-            android:hint="Duration in minutes"
-            android:inputType="number"
-            android:text="30" >
-
-            <requestFocus />
-        </EditText>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1" >
 
         <Button
             android:id="@+id/buttonSave"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Save and Close" />
+            android:layout_weight="1"
+            android:text="Set Dawn" />
+
+        <Button
+            android:id="@+id/buttonDiscard"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Discard" />
     </LinearLayout>
 
-</ScrollView>
+</LinearLayout>
