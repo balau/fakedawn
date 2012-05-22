@@ -48,9 +48,12 @@ public class Preferences extends Activity implements OnClickListener {
 		
 		TimePicker tp = (TimePicker) findViewById(R.id.timePicker1);
 		tp.setIs24HourView(true);
+		tp.setAddStatesFromChildren(true);
 
 		Button saveButton = (Button) findViewById(R.id.buttonSave);
 		saveButton.setOnClickListener(this);
+		Button discardButton = (Button) findViewById(R.id.buttonDiscard);
+		discardButton.setOnClickListener(this);
 	}
 
 	/* (non-Javadoc)
@@ -98,6 +101,7 @@ public class Preferences extends Activity implements OnClickListener {
 			SharedPreferences.Editor editor = pref.edit();
 			
 			TimePicker tp = (TimePicker) findViewById(R.id.timePicker1);
+			tp.clearFocus();
 			editor.putInt("hour", tp.getCurrentHour());
 			editor.putInt("minute", tp.getCurrentMinute());
 			
@@ -130,7 +134,11 @@ public class Preferences extends Activity implements OnClickListener {
 			Intent updateAlarm = new Intent(getApplicationContext(), Alarm.class);
 			getApplicationContext().startService(updateAlarm);
 			Log.d("FakeDawn", "Preferences saved.");
-			this.finish();
+			finish();
+		}
+		else if(v.getId() == R.id.buttonDiscard)
+		{
+			finish();
 		}
 	}
 
