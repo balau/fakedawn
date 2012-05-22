@@ -79,7 +79,10 @@ public class Alarm extends Service {
 					nextAlarmTime.getTimeInMillis(),
 					AlarmManager.INTERVAL_DAY,
 					getDawnPendingIntent());
-			Log.d("FakeDawn", String.format("Alarm set."));	
+			Log.d("FakeDawn", 
+					String.format("Alarm set for %02d:%02d.",
+							nextAlarmTime.get(Calendar.HOUR_OF_DAY),
+							nextAlarmTime.get(Calendar.MINUTE)));
 
 		}
 		// If we get killed, after returning from here, restart
