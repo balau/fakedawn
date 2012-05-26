@@ -19,10 +19,14 @@
 
 package org.balau.fakedawn;
 
+import java.io.IOException;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.media.MediaPlayer.OnPreparedListener;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -32,6 +36,7 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
@@ -39,10 +44,12 @@ import android.widget.TimePicker;
  * @author francesco
  *
  */
-public class Preferences extends Activity implements OnClickListener {
+public class Preferences extends Activity implements OnClickListener, OnSeekBarChangeListener, OnPreparedListener {
 
 	private static int REQUEST_PICK_SOUND = 0;
 	private Uri m_soundUri = null;
+	private MediaPlayer m_player = new MediaPlayer();
+	private boolean m_playerReady = false;
 
 	/* (non-Javadoc)
 	 * @see android.app.Activity#onCreate(android.os.Bundle)
@@ -63,6 +70,9 @@ public class Preferences extends Activity implements OnClickListener {
 		discardButton.setOnClickListener(this);
 		Button soundButton = (Button) findViewById(R.id.buttonSound);
 		soundButton.setOnClickListener(this);
+		
+		SeekBar seekBarVolume = (SeekBar)findViewById(R.id.seekBarVolume);
+		seekBarVolume.setOnSeekBarChangeListener(this);
 	}
 
 	/* (non-Javadoc)
@@ -113,7 +123,7 @@ public class Preferences extends Activity implements OnClickListener {
 		
 		SeekBar seekBarVolume = (SeekBar)findViewById(R.id.seekBarVolume);
 		AudioManager am = (AudioManager)getSystemService(AUDIO_SERVICE);
-		int maxVolume = am.getStreamMaxVolume(AudioManager.STREAM_ALARM); 
+		int maxVolume = am.getStreamMaxVolume(AudioManager.STREAM_ALARM);
 		seekBarVolume.setMax(maxVolume);
 		int volume = pref.getInt("volume", maxVolume/2);
 		if(volume < 0) volume = 0;
@@ -215,12 +225,34 @@ public class Preferences extends Activity implements OnClickListener {
 		{
 			soundButton.setText("Silent");
 			seekBarVolume.setEnabled(false);
+			m_player.reset();
+			m_playerReady = false;
 		}
 		else
 		{
 			String soundTitle = RingtoneManager.getRingtone(this, m_soundUri).getTitle(this);	
 			soundButton.setText(soundTitle);
 			seekBarVolume.setEnabled(true);
+			try {
+				m_playerReady = false;
+				m_player.reset();
+				m_player.setDataSource(this, m_soundUri);
+				m_player.setOnPreparedListener(this);
+				m_player.setAudioStreamType(AudioManager.STREAM_ALARM);
+				m_player.prepareAsync();
+			} catch (IllegalArgumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (SecurityException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalStateException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 	
@@ -237,6 +269,66 @@ public class Preferences extends Activity implements OnClickListener {
 						RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
 				updateSoundViews();
 			}
+		}
+	}
+
+	private void previewVolume(int volume)
+	{
+		if(m_playerReady)
+		{
+			if(!m_player.isPlaying())
+			{
+				m_player.start();
+			}
+			AudioManager am = (AudioManager)getSystemService(AUDIO_SERVICE);
+			int maxVolume = am.getStreamMaxVolume(AudioManager.STREAM_ALARM);
+			if(volume < 0) volume = 0;
+			if(volume > maxVolume) volume = maxVolume;
+			am.setStreamVolume(AudioManager.STREAM_ALARM, volume, 0);
+		}
+	}
+	
+	@Override
+	public void onProgressChanged(SeekBar seekBar, int progress,
+			boolean fromUser) {
+		// TODO Auto-generated method stub
+		if(seekBar.getId() == R.id.seekBarVolume)
+		{
+			if(fromUser)
+			{
+				previewVolume(progress);
+			}
+		}
+		
+	}
+
+	@Override
+	public void onStartTrackingTouch(SeekBar seekBar) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onStopTrackingTouch(SeekBar seekBar) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onPrepared(MediaPlayer mp) {
+		// TODO Auto-generated method stub
+		m_playerReady = true;
+	}
+
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onStop()
+	 */
+	@Override
+	protected void onStop() {
+		super.onStop();
+		if(m_player.isPlaying())
+		{
+			m_player.stop();
 		}
 	}
 
