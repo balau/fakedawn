@@ -73,17 +73,9 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		
 		SeekBar seekBarVolume = (SeekBar)findViewById(R.id.seekBarVolume);
 		seekBarVolume.setOnSeekBarChangeListener(this);
-	}
-
-	/* (non-Javadoc)
-	 * @see android.app.Activity#onStart()
-	 */
-	@Override
-	protected void onStart() {
-		super.onStart();
+		
 		SharedPreferences pref = getApplicationContext().getSharedPreferences("main", MODE_PRIVATE);
 
-		TimePicker tp = (TimePicker) findViewById(R.id.timePicker1);
 		tp.setCurrentHour(pref.getInt("hour", 8));
 		tp.setCurrentMinute(pref.getInt("minute", 0));
 
@@ -121,7 +113,6 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 			m_soundUri = Uri.parse(sound);
 		}
 		
-		SeekBar seekBarVolume = (SeekBar)findViewById(R.id.seekBarVolume);
 		AudioManager am = (AudioManager)getSystemService(AUDIO_SERVICE);
 		int maxVolume = am.getStreamMaxVolume(AudioManager.STREAM_ALARM);
 		seekBarVolume.setMax(maxVolume);
@@ -133,6 +124,15 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		updateSoundViews();
 
 		Log.d("FakeDawn", "Preferences loaded.");
+	}
+
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onStart()
+	 */
+	@Override
+	protected void onStart() {
+		super.onStart();
+
 	}
 
 	public void onClick(View v) {
