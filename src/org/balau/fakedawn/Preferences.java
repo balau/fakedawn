@@ -234,12 +234,11 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 			soundButton.setText(soundTitle);
 			seekBarVolume.setEnabled(true);
 			try {
-				m_playerReady = false;
 				m_player.reset();
 				m_player.setDataSource(this, m_soundUri);
 				m_player.setOnPreparedListener(this);
 				m_player.setAudioStreamType(AudioManager.STREAM_ALARM);
-				m_player.prepareAsync();
+				m_playerReady = true;
 			} catch (IllegalArgumentException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -278,7 +277,7 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		{
 			if(!m_player.isPlaying())
 			{
-				m_player.start();
+				m_player.prepareAsync();
 			}
 			AudioManager am = (AudioManager)getSystemService(AUDIO_SERVICE);
 			int maxVolume = am.getStreamMaxVolume(AudioManager.STREAM_ALARM);
@@ -317,7 +316,7 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 	@Override
 	public void onPrepared(MediaPlayer mp) {
 		// TODO Auto-generated method stub
-		m_playerReady = true;
+		m_player.start();
 	}
 
 	/* (non-Javadoc)
