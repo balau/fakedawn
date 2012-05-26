@@ -18,12 +18,18 @@
  */
 package org.balau.fakedawn;
 
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.media.MediaPlayer.OnPreparedListener;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.provider.Settings.SettingNotFoundException;
@@ -33,7 +39,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
-public class Dawn extends Activity implements OnClickListener {
+public class Dawn extends Activity implements OnClickListener, OnPreparedListener {
 
 	private long m_alarm_start_millis;
 	private long m_alarm_end_millis;
@@ -44,6 +50,11 @@ public class Dawn extends Activity implements OnClickListener {
 	private boolean m_active = false;
 
 	private int m_brightnessMode;
+
+	private long m_soundStartMillis;
+	private MediaPlayer m_player = new MediaPlayer();
+	private Uri m_soundUri = null;
+	private boolean m_soundStarted = false;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -97,13 +108,50 @@ public class Dawn extends Activity implements OnClickListener {
 			if(grey_level > 0xFF) grey_level = 0xFF;
 			grey_rgb = 0xFF000000 + (grey_level * 0x010101);
 			findViewById(R.id.dawn_background).setBackgroundColor(grey_rgb);
-			Log.d("FakeDawn", "Brightness updated.");		
-			if(System.currentTimeMillis() >= m_alarm_end_millis)
+			Log.d("FakeDawn", "Brightness updated.");
+		}
+	}
+
+	private void updateSound()
+	{
+		if(m_soundUri != null && !m_soundStarted)
+		{
+			if(System.currentTimeMillis() >= m_soundStartMillis)
 			{
-				m_timer.cancel();
-				Log.d("FakeDawn", "Timer stopped.");
+				m_player.reset();
+
+				if(m_soundUri != null)
+				{
+					try {
+						m_player.setDataSource(this, m_soundUri);
+						m_player.setLooping(true);
+						m_player.setAudioStreamType(AudioManager.STREAM_ALARM);
+						m_player.setOnPreparedListener(this);
+						m_player.prepareAsync();
+						m_soundStarted = true;
+						Log.d("FakeDawn", "Sound preparing...");
+					} catch (IllegalArgumentException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (SecurityException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IllegalStateException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
 			}
 		}
+	}
+
+	@Override
+	public void onPrepared(MediaPlayer mp) {
+		mp.start();
+		Log.d("FakeDawn", "Sound started.");
 	}
 
 	/* (non-Javadoc)
@@ -164,7 +212,29 @@ public class Dawn extends Activity implements OnClickListener {
 								Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL);
 					}
 				}
+
+				String sound = pref.getString("sound", "");
+				if(sound.isEmpty())
+				{
+					m_soundUri = null;
+					Log.d("FakeDawn", "Silent.");
+				}
+				else
+				{
+					m_soundUri = Uri.parse(sound);
+					m_soundStartMillis = m_alarm_end_millis;
+					AudioManager am = (AudioManager)getSystemService(AUDIO_SERVICE);
+					int maxVolume = am.getStreamMaxVolume(AudioManager.STREAM_ALARM); 
+					int volume = pref.getInt("volume", maxVolume/2);
+					if(volume < 0) volume = 0;
+					if(volume > maxVolume) volume = maxVolume;
+					am.setStreamVolume(AudioManager.STREAM_ALARM, volume, 0);
+					Log.d("FakeDawn", "Sound scheduled.");
+				}
+				
 				updateBrightness();
+				updateSound();
+				
 				m_active = true;
 
 				m_timer = new Timer();
@@ -177,6 +247,7 @@ public class Dawn extends Activity implements OnClickListener {
 										new Runnable() {
 											public void run() {
 												updateBrightness();
+												updateSound();
 											}
 										});
 							}
@@ -205,6 +276,14 @@ public class Dawn extends Activity implements OnClickListener {
 		super.onStop();
 		m_timer.cancel();
 		m_active = false;
+		if(m_soundStarted)
+		{
+			if(m_player.isPlaying())
+			{
+				m_player.stop();
+			}
+			m_player.release();
+		}
 		Log.d("FakeDawn", "Dawn Stopped.");
 	}
 
