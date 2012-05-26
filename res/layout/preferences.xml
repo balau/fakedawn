@@ -43,7 +43,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:text="Dawn Duration"
+                android:text="Dawn Duration (minutes)"
                 android:textAppearance="?android:attr/textAppearanceMedium" />
 
             <EditText
@@ -55,6 +55,20 @@
                 android:hint="Duration in minutes"
                 android:inputType="number"
                 android:text="30" />
+
+            <TextView
+                android:id="@+id/textView3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="Alarm Sound"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+            <Button
+                android:id="@+id/buttonSound"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Silent" />
 
             <LinearLayout
                 android:layout_width="match_parent"
