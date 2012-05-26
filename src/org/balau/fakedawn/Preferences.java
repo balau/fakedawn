@@ -22,6 +22,7 @@ package org.balau.fakedawn;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.AudioManager;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -30,6 +31,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
@@ -108,7 +110,17 @@ public class Preferences extends Activity implements OnClickListener {
 		{
 			m_soundUri = Uri.parse(sound);
 		}
-		updateSoundButtonText();
+		
+		SeekBar seekBarVolume = (SeekBar)findViewById(R.id.seekBarVolume);
+		AudioManager am = (AudioManager)getSystemService(AUDIO_SERVICE);
+		int maxVolume = am.getStreamMaxVolume(AudioManager.STREAM_ALARM); 
+		seekBarVolume.setMax(maxVolume);
+		int volume = pref.getInt("volume", maxVolume/2);
+		if(volume < 0) volume = 0;
+		if(volume > maxVolume) volume = maxVolume;
+		seekBarVolume.setProgress(volume);
+		
+		updateSoundViews();
 
 		Log.d("FakeDawn", "Preferences loaded.");
 	}
@@ -154,7 +166,10 @@ public class Preferences extends Activity implements OnClickListener {
 			{
 				editor.putString("sound", m_soundUri.toString());
 			}
-
+			
+			SeekBar sb = (SeekBar)findViewById(R.id.seekBarVolume);
+			editor.putInt("volume", sb.getProgress());
+			
 			editor.putBoolean("enabled", true);
 			editor.commit();
 
@@ -192,17 +207,20 @@ public class Preferences extends Activity implements OnClickListener {
 		}
 	}
 
-	private void updateSoundButtonText()
+	private void updateSoundViews()
 	{
 		Button soundButton = (Button) findViewById(R.id.buttonSound);
+		SeekBar seekBarVolume = (SeekBar)findViewById(R.id.seekBarVolume);
 		if(m_soundUri == null)
 		{
 			soundButton.setText("Silent");
+			seekBarVolume.setEnabled(false);
 		}
 		else
 		{
 			String soundTitle = RingtoneManager.getRingtone(this, m_soundUri).getTitle(this);	
 			soundButton.setText(soundTitle);
+			seekBarVolume.setEnabled(true);
 		}
 	}
 	
@@ -217,7 +235,7 @@ public class Preferences extends Activity implements OnClickListener {
 			{
 				m_soundUri = (Uri) data.getParcelableExtra(
 						RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
-				updateSoundButtonText();
+				updateSoundViews();
 			}
 		}
 	}
