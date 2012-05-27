@@ -51,7 +51,6 @@ public class Dawn extends Activity implements OnClickListener, OnPreparedListene
 
 	private long m_soundStartMillis;
 	private MediaPlayer m_player = new MediaPlayer();
-	private Uri m_soundUri = null;
 	private boolean m_soundInitialized = false;
 
 	/** Called when the activity is first created. */
@@ -71,12 +70,6 @@ public class Dawn extends Activity implements OnClickListener, OnPreparedListene
 
 		findViewById(R.id.dawn_background).setOnClickListener(this);
 
-		m_player.setOnPreparedListener(this);
-		m_player.setOnCompletionListener(this);
-		m_player.setOnErrorListener(this);
-		m_player.setAudioStreamType(AudioManager.STREAM_ALARM);
-		m_player.reset();
-		
 		SharedPreferences pref = getApplicationContext().getSharedPreferences("main", MODE_PRIVATE);
 		String day;
 		Calendar rightNow = Calendar.getInstance();
@@ -129,30 +122,33 @@ public class Dawn extends Activity implements OnClickListener, OnPreparedListene
 								Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL);
 					}
 				}
-
+				
+				m_player.setOnPreparedListener(this);
+				m_player.setOnCompletionListener(this);
+				m_player.setOnErrorListener(this);
+				m_player.setAudioStreamType(AudioManager.STREAM_ALARM);
+				m_player.reset();
+				m_soundStartMillis = m_alarm_end_millis;
+				
 				String sound = pref.getString("sound", "");
 				if(sound.isEmpty())
 				{
-					m_soundUri = null;
 					Log.d("FakeDawn", "Silent.");
 				}
 				else
 				{
-					m_soundUri = Uri.parse(sound);
-					m_soundStartMillis = m_alarm_end_millis;
-					AudioManager am = (AudioManager)getSystemService(AUDIO_SERVICE);
-					int maxVolume = am.getStreamMaxVolume(AudioManager.STREAM_ALARM); 
-					int volume = pref.getInt("volume", maxVolume/2);
-					if(volume < 0) volume = 0;
-					if(volume > maxVolume) volume = maxVolume;
-					am.setStreamVolume(AudioManager.STREAM_ALARM, volume, 0);
+					Uri soundUri = Uri.parse(sound);
 
-					m_player.reset();
-
-					if(m_soundUri != null)
+					if(soundUri != null)
 					{
+						AudioManager am = (AudioManager)getSystemService(AUDIO_SERVICE);
+						int maxVolume = am.getStreamMaxVolume(AudioManager.STREAM_ALARM); 
+						int volume = pref.getInt("volume", maxVolume/2);
+						if(volume < 0) volume = 0;
+						if(volume > maxVolume) volume = maxVolume;
+						am.setStreamVolume(AudioManager.STREAM_ALARM, volume, 0);
 						try {
-							m_player.setDataSource(this, m_soundUri);
+							m_player.setDataSource(this, soundUri);
 							m_soundInitialized = true;
 						} catch (IllegalArgumentException e) {
 							e.printStackTrace();
@@ -247,22 +243,6 @@ public class Dawn extends Activity implements OnClickListener, OnPreparedListene
 	}
 
 	/* (non-Javadoc)
-	 * @see android.app.Activity#onStart()
-	 */
-	@Override
-	protected void onStart() {
-		super.onStart();
-	}
-
-	/* (non-Javadoc)
-	 * @see android.app.Activity#onPause()
-	 */
-	@Override
-	protected void onPause() {
-		super.onPause();
-	}
-
-	/* (non-Javadoc)
 	 * @see android.app.Activity#onStop()
 	 */
 	@Override
@@ -278,22 +258,6 @@ public class Dawn extends Activity implements OnClickListener, OnPreparedListene
 			m_soundInitialized = false;
 		}
 		Log.d("FakeDawn", "Dawn Stopped.");
-	}
-
-	/* (non-Javadoc)
-	 * @see android.app.Activity#onRestart()
-	 */
-	@Override
-	protected void onRestart() {
-		super.onRestart();
-	}
-
-	/* (non-Javadoc)
-	 * @see android.app.Activity#onResume()
-	 */
-	@Override
-	protected void onResume() {
-		super.onResume();
 	}
 
 	@Override
