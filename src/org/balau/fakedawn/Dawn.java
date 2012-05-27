@@ -76,67 +76,7 @@ public class Dawn extends Activity implements OnClickListener, OnPreparedListene
 		m_player.setOnErrorListener(this);
 		m_player.setAudioStreamType(AudioManager.STREAM_ALARM);
 		m_player.reset();
-	}
-
-	public void onClick(View v) {
-		finish();
-	}
-
-	private void updateBrightness()
-	{
-		float brightnessStep = 0.01F;
-		float brightness; 
-		long level_percent;
-		int grey_level;
-		int grey_rgb;
-
-		level_percent = 
-				(100 * (System.currentTimeMillis() - m_alarm_start_millis))
-				/ (m_alarm_end_millis - m_alarm_start_millis);
-		if(level_percent < 1) { level_percent = 1; }
-		else if(level_percent > 100) { level_percent = 100; }
-
-		brightness = brightnessStep * level_percent;
-		Log.d("HelloAndroid", String.format("b = %f", brightness));
-		if(m_use_brightness)
-		{
-			WindowManager.LayoutParams layoutParams = getWindow().getAttributes();
-			layoutParams.screenBrightness = brightness;
-			getWindow().setAttributes(layoutParams);
-		}
-
-		grey_level = (int)(brightness * (float)0xFF);
-		if(grey_level > 0xFF) grey_level = 0xFF;
-		grey_rgb = 0xFF000000 + (grey_level * 0x010101);
-		findViewById(R.id.dawn_background).setBackgroundColor(grey_rgb);
-	}
-
-	private void updateSound()
-	{
-		if(m_soundInitialized)
-		{
-			if(System.currentTimeMillis() >= m_soundStartMillis)
-			{
-				if(!m_player.isPlaying())
-				{
-					m_player.prepareAsync();
-				}
-			}			
-		}
-	}
-
-	@Override
-	public void onPrepared(MediaPlayer mp) {
-		m_player.setLooping(true);
-		mp.start();
-	}
-
-	/* (non-Javadoc)
-	 * @see android.app.Activity#onStart()
-	 */
-	@Override
-	protected void onStart() {
-		super.onStart();
+		
 		SharedPreferences pref = getApplicationContext().getSharedPreferences("main", MODE_PRIVATE);
 		String day;
 		Calendar rightNow = Calendar.getInstance();
@@ -251,6 +191,67 @@ public class Dawn extends Activity implements OnClickListener, OnPreparedListene
 				this.finish();
 			}
 		}
+	}
+
+	public void onClick(View v) {
+		finish();
+	}
+
+	private void updateBrightness()
+	{
+		float brightnessStep = 0.01F;
+		float brightness; 
+		long level_percent;
+		int grey_level;
+		int grey_rgb;
+
+		level_percent = 
+				(100 * (System.currentTimeMillis() - m_alarm_start_millis))
+				/ (m_alarm_end_millis - m_alarm_start_millis);
+		if(level_percent < 1) { level_percent = 1; }
+		else if(level_percent > 100) { level_percent = 100; }
+
+		brightness = brightnessStep * level_percent;
+		Log.d("HelloAndroid", String.format("b = %f", brightness));
+		if(m_use_brightness)
+		{
+			WindowManager.LayoutParams layoutParams = getWindow().getAttributes();
+			layoutParams.screenBrightness = brightness;
+			getWindow().setAttributes(layoutParams);
+		}
+
+		grey_level = (int)(brightness * (float)0xFF);
+		if(grey_level > 0xFF) grey_level = 0xFF;
+		grey_rgb = 0xFF000000 + (grey_level * 0x010101);
+		findViewById(R.id.dawn_background).setBackgroundColor(grey_rgb);
+	}
+
+	private void updateSound()
+	{
+		if(m_soundInitialized)
+		{
+			if(System.currentTimeMillis() >= m_soundStartMillis)
+			{
+				if(!m_player.isPlaying())
+				{
+					m_player.prepareAsync();
+				}
+			}			
+		}
+	}
+
+	@Override
+	public void onPrepared(MediaPlayer mp) {
+		m_player.setLooping(true);
+		mp.start();
+	}
+
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onStart()
+	 */
+	@Override
+	protected void onStart() {
+		super.onStart();
 	}
 
 	/* (non-Javadoc)
