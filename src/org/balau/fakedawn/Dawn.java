@@ -47,9 +47,6 @@ public class Dawn extends Activity implements OnClickListener, OnPreparedListene
 	private boolean m_use_brightness = false;
 	private Timer m_timer;
 	private int m_timer_tick_seconds = 10;
-
-	private boolean m_active = false;
-
 	private int m_brightnessMode;
 
 	private long m_soundStartMillis;
@@ -73,7 +70,7 @@ public class Dawn extends Activity implements OnClickListener, OnPreparedListene
 				WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
 
 		findViewById(R.id.dawn_background).setOnClickListener(this);
-		
+
 		m_player.setOnPreparedListener(this);
 		m_player.setOnCompletionListener(this);
 		m_player.setOnErrorListener(this);
@@ -93,30 +90,25 @@ public class Dawn extends Activity implements OnClickListener, OnPreparedListene
 		int grey_level;
 		int grey_rgb;
 
-		if(m_active)
+		level_percent = 
+				(100 * (System.currentTimeMillis() - m_alarm_start_millis))
+				/ (m_alarm_end_millis - m_alarm_start_millis);
+		if(level_percent < 1) { level_percent = 1; }
+		else if(level_percent > 100) { level_percent = 100; }
+
+		brightness = brightnessStep * level_percent;
+		Log.d("HelloAndroid", String.format("b = %f", brightness));
+		if(m_use_brightness)
 		{
-			Log.d("FakeDawn", "Updating brightness.");		
-			level_percent = 
-					(100 * (System.currentTimeMillis() - m_alarm_start_millis))
-					/ (m_alarm_end_millis - m_alarm_start_millis);
-			if(level_percent < 1) { level_percent = 1; }
-			else if(level_percent > 100) { level_percent = 100; }
-
-			brightness = brightnessStep * level_percent;
-			Log.d("HelloAndroid", String.format("b = %f", brightness));
-			if(m_use_brightness)
-			{
-				WindowManager.LayoutParams layoutParams = getWindow().getAttributes();
-				layoutParams.screenBrightness = brightness;
-				getWindow().setAttributes(layoutParams);
-			}
-
-			grey_level = (int)(brightness * (float)0xFF);
-			if(grey_level > 0xFF) grey_level = 0xFF;
-			grey_rgb = 0xFF000000 + (grey_level * 0x010101);
-			findViewById(R.id.dawn_background).setBackgroundColor(grey_rgb);
-			Log.d("FakeDawn", "Brightness updated.");
+			WindowManager.LayoutParams layoutParams = getWindow().getAttributes();
+			layoutParams.screenBrightness = brightness;
+			getWindow().setAttributes(layoutParams);
 		}
+
+		grey_level = (int)(brightness * (float)0xFF);
+		if(grey_level > 0xFF) grey_level = 0xFF;
+		grey_rgb = 0xFF000000 + (grey_level * 0x010101);
+		findViewById(R.id.dawn_background).setBackgroundColor(grey_rgb);
 	}
 
 	private void updateSound()
@@ -214,7 +206,7 @@ public class Dawn extends Activity implements OnClickListener, OnPreparedListene
 					if(volume < 0) volume = 0;
 					if(volume > maxVolume) volume = maxVolume;
 					am.setStreamVolume(AudioManager.STREAM_ALARM, volume, 0);
-					
+
 					m_player.reset();
 
 					if(m_soundUri != null)
@@ -232,14 +224,12 @@ public class Dawn extends Activity implements OnClickListener, OnPreparedListene
 							e.printStackTrace();
 						}
 					}
-					
+
 					Log.d("FakeDawn", "Sound scheduled.");
 				}
-				
+
 				updateBrightness();
 				updateSound();
-				
-				m_active = true;
 
 				m_timer = new Timer();
 				m_timer.schedule(
@@ -278,13 +268,13 @@ public class Dawn extends Activity implements OnClickListener, OnPreparedListene
 	protected void onStop() {
 		super.onStop();
 		m_timer.cancel();
-		m_active = false;
 		if(m_soundInitialized)
 		{
 			if(m_player.isPlaying())
 			{
 				m_player.stop();
 			}
+			m_soundInitialized = false;
 		}
 		Log.d("FakeDawn", "Dawn Stopped.");
 	}
@@ -309,12 +299,13 @@ public class Dawn extends Activity implements OnClickListener, OnPreparedListene
 	public boolean onError(MediaPlayer mp, int what, int extra) {
 		Log.e("FakeDawn", String.format("MediaPlayer error. what: %d, extra: %d", what, extra));
 		m_player.reset();
+		m_soundInitialized = false;
 		return true;
 	}
 
 	@Override
 	public void onCompletion(MediaPlayer mp) {
-		m_player.stop();
 		Log.w("FakeDawn", "Sound completed even if looping.");
+		m_player.stop();
 	}
 }
