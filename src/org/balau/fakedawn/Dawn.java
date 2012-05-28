@@ -32,8 +32,6 @@ import android.media.MediaPlayer.OnErrorListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.Settings;
-import android.provider.Settings.SettingNotFoundException;
 import android.util.Log;
 import android.view.View.OnClickListener;
 import android.view.View;
@@ -44,10 +42,8 @@ public class Dawn extends Activity implements OnClickListener, OnPreparedListene
 
 	private long m_alarm_start_millis;
 	private long m_alarm_end_millis;
-	private boolean m_use_brightness = false;
 	private Timer m_timer;
 	private int m_timer_tick_seconds = 10;
-	private int m_brightnessMode;
 
 	private long m_soundStartMillis;
 	private MediaPlayer m_player = new MediaPlayer();
@@ -108,84 +104,67 @@ public class Dawn extends Activity implements OnClickListener, OnPreparedListene
 		{
 			m_alarm_start_millis = rightNow.getTimeInMillis();
 			m_alarm_end_millis = m_alarm_start_millis + (1000*60*pref.getInt("duration", 15));
-			try {
-				if(m_use_brightness)
-				{
-					m_brightnessMode = 
-							Settings.System.getInt(
-									getContentResolver(), 
-									Settings.System.SCREEN_BRIGHTNESS_MODE);
-					if (m_brightnessMode == Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC) {
-						Settings.System.putInt(
-								getContentResolver(),
-								Settings.System.SCREEN_BRIGHTNESS_MODE,
-								Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL);
-					}
-				}
-				
-				m_player.setOnPreparedListener(this);
-				m_player.setOnCompletionListener(this);
-				m_player.setOnErrorListener(this);
-				m_player.setAudioStreamType(AudioManager.STREAM_ALARM);
-				m_player.reset();
-				m_soundStartMillis = m_alarm_end_millis;
-				
-				String sound = pref.getString("sound", "");
-				if(sound.isEmpty())
-				{
-					Log.d("FakeDawn", "Silent.");
-				}
-				else
-				{
-					Uri soundUri = Uri.parse(sound);
 
-					if(soundUri != null)
-					{
-						AudioManager am = (AudioManager)getSystemService(AUDIO_SERVICE);
-						int maxVolume = am.getStreamMaxVolume(AudioManager.STREAM_ALARM); 
-						int volume = pref.getInt("volume", maxVolume/2);
-						if(volume < 0) volume = 0;
-						if(volume > maxVolume) volume = maxVolume;
-						am.setStreamVolume(AudioManager.STREAM_ALARM, volume, 0);
-						try {
-							m_player.setDataSource(this, soundUri);
-							m_soundInitialized = true;
-						} catch (IllegalArgumentException e) {
-							e.printStackTrace();
-						} catch (SecurityException e) {
-							e.printStackTrace();
-						} catch (IllegalStateException e) {
-							e.printStackTrace();
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-					}
+			m_player.setOnPreparedListener(this);
+			m_player.setOnCompletionListener(this);
+			m_player.setOnErrorListener(this);
+			m_player.setAudioStreamType(AudioManager.STREAM_ALARM);
+			m_player.reset();
+			m_soundStartMillis = m_alarm_end_millis;
 
-					Log.d("FakeDawn", "Sound scheduled.");
-				}
-
-				updateBrightness();
-				updateSound();
-
-				m_timer = new Timer();
-				m_timer.schedule(
-						new TimerTask() {
-
-							@Override
-							public void run() {
-								runOnUiThread(
-										new Runnable() {
-											public void run() {
-												updateBrightness();
-												updateSound();
-											}
-										});
-							}
-						}, m_timer_tick_seconds*1000, m_timer_tick_seconds*1000);
-			} catch (SettingNotFoundException e) {
-				e.printStackTrace();
-				this.finish();
+			String sound = pref.getString("sound", "");
+			if(sound.isEmpty())
+			{
+				Log.d("FakeDawn", "Silent.");
 			}
+			else
+			{
+				Uri soundUri = Uri.parse(sound);
+
+				if(soundUri != null)
+				{
+					AudioManager am = (AudioManager)getSystemService(AUDIO_SERVICE);
+					int maxVolume = am.getStreamMaxVolume(AudioManager.STREAM_ALARM); 
+					int volume = pref.getInt("volume", maxVolume/2);
+					if(volume < 0) volume = 0;
+					if(volume > maxVolume) volume = maxVolume;
+					am.setStreamVolume(AudioManager.STREAM_ALARM, volume, 0);
+					try {
+						m_player.setDataSource(this, soundUri);
+						m_soundInitialized = true;
+					} catch (IllegalArgumentException e) {
+						e.printStackTrace();
+					} catch (SecurityException e) {
+						e.printStackTrace();
+					} catch (IllegalStateException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+
+				Log.d("FakeDawn", "Sound scheduled.");
+			}
+
+			updateBrightness();
+			updateSound();
+
+			m_timer = new Timer();
+			m_timer.schedule(
+					new TimerTask() {
+
+						@Override
+						public void run() {
+							runOnUiThread(
+									new Runnable() {
+										public void run() {
+											updateBrightness();
+											updateSound();
+										}
+									});
+						}
+					}, m_timer_tick_seconds*1000, m_timer_tick_seconds*1000);
+
 		}
 	}
 
@@ -209,12 +188,6 @@ public class Dawn extends Activity implements OnClickListener, OnPreparedListene
 
 		brightness = brightnessStep * level_percent;
 		Log.d("HelloAndroid", String.format("b = %f", brightness));
-		if(m_use_brightness)
-		{
-			WindowManager.LayoutParams layoutParams = getWindow().getAttributes();
-			layoutParams.screenBrightness = brightness;
-			getWindow().setAttributes(layoutParams);
-		}
 
 		grey_level = (int)(brightness * (float)0xFF);
 		if(grey_level > 0xFF) grey_level = 0xFF;
