@@ -40,10 +40,12 @@ import android.view.WindowManager;
 
 public class Dawn extends Activity implements OnClickListener, OnPreparedListener, OnCompletionListener, OnErrorListener {
 
+	private static int TIMER_TICK_SECONDS = 10;
+	private static final String ALARM_START_MILLIS = "ALARM_START_MILLIS";
+
 	private long m_alarm_start_millis;
 	private long m_alarm_end_millis;
 	private Timer m_timer;
-	private int m_timer_tick_seconds = 10;
 
 	private long m_soundStartMillis;
 	private MediaPlayer m_player = new MediaPlayer();
@@ -103,6 +105,13 @@ public class Dawn extends Activity implements OnClickListener, OnPreparedListene
 		else
 		{
 			m_alarm_start_millis = rightNow.getTimeInMillis();
+			if(savedInstanceState != null)
+			{
+				if(savedInstanceState.containsKey(ALARM_START_MILLIS))
+				{
+					m_alarm_start_millis = savedInstanceState.getLong(ALARM_START_MILLIS);
+				}
+			}
 			m_alarm_end_millis = m_alarm_start_millis + (1000*60*pref.getInt("duration", 15));
 
 			m_player.setOnPreparedListener(this);
@@ -163,7 +172,7 @@ public class Dawn extends Activity implements OnClickListener, OnPreparedListene
 										}
 									});
 						}
-					}, m_timer_tick_seconds*1000, m_timer_tick_seconds*1000);
+					}, TIMER_TICK_SECONDS*1000, TIMER_TICK_SECONDS*1000);
 
 		}
 	}
@@ -245,5 +254,14 @@ public class Dawn extends Activity implements OnClickListener, OnPreparedListene
 	public void onCompletion(MediaPlayer mp) {
 		Log.w("FakeDawn", "Sound completed even if looping.");
 		m_player.stop();
+	}
+
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onSaveInstanceState(android.os.Bundle)
+	 */
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		outState.putLong(ALARM_START_MILLIS, m_alarm_start_millis);
 	}
 }
