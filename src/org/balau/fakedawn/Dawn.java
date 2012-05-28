@@ -18,27 +18,22 @@
  */
 package org.balau.fakedawn;
 
-import java.io.IOException;
 import java.util.Calendar;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
-import android.media.MediaPlayer.OnCompletionListener;
-import android.media.MediaPlayer.OnErrorListener;
-import android.media.MediaPlayer.OnPreparedListener;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View.OnClickListener;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
-public class Dawn extends Activity implements OnClickListener, OnPreparedListener, OnCompletionListener, OnErrorListener {
+public class Dawn extends Activity implements OnClickListener {
 
 	private static int TIMER_TICK_SECONDS = 10;
 	private static final String ALARM_START_MILLIS = "ALARM_START_MILLIS";
@@ -46,10 +41,6 @@ public class Dawn extends Activity implements OnClickListener, OnPreparedListene
 	private long m_alarmStartMillis;
 	private long m_alarmEndMillis;
 	private Timer m_timer;
-
-	private long m_soundStartMillis;
-	private MediaPlayer m_player = new MediaPlayer();
-	private boolean m_soundInitialized = false;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -114,49 +105,14 @@ public class Dawn extends Activity implements OnClickListener, OnPreparedListene
 			}
 			m_alarmEndMillis = m_alarmStartMillis + (1000*60*pref.getInt("duration", 15));
 
-			m_player.setOnPreparedListener(this);
-			m_player.setOnCompletionListener(this);
-			m_player.setOnErrorListener(this);
-			m_player.setAudioStreamType(AudioManager.STREAM_ALARM);
-			m_player.reset();
-			m_soundStartMillis = m_alarmEndMillis;
-
-			String sound = pref.getString("sound", "");
-			if(sound.isEmpty())
-			{
-				Log.d("FakeDawn", "Silent.");
-			}
-			else
-			{
-				Uri soundUri = Uri.parse(sound);
-
-				if(soundUri != null)
-				{
-					AudioManager am = (AudioManager)getSystemService(AUDIO_SERVICE);
-					int maxVolume = am.getStreamMaxVolume(AudioManager.STREAM_ALARM); 
-					int volume = pref.getInt("volume", maxVolume/2);
-					if(volume < 0) volume = 0;
-					if(volume > maxVolume) volume = maxVolume;
-					am.setStreamVolume(AudioManager.STREAM_ALARM, volume, 0);
-					try {
-						m_player.setDataSource(this, soundUri);
-						m_soundInitialized = true;
-					} catch (IllegalArgumentException e) {
-						e.printStackTrace();
-					} catch (SecurityException e) {
-						e.printStackTrace();
-					} catch (IllegalStateException e) {
-						e.printStackTrace();
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
-
-				Log.d("FakeDawn", "Sound scheduled.");
-			}
+			Intent sound = new Intent(getApplicationContext(), DawnSound.class);
+			sound.putExtra(DawnSound.EXTRA_SOUND_MILLIS, m_alarmEndMillis);
+			sound.putExtra(DawnSound.EXTRA_SOUND_URI, pref.getString("sound", ""));
+			if(pref.contains("volume"))
+				sound.putExtra(DawnSound.EXTRA_SOUND_VOLUME, pref.getInt("volume", 0));			
+			startService(sound);
 
 			updateBrightness();
-			updateSound();
 
 			m_timer = new Timer();
 			m_timer.schedule(
@@ -168,7 +124,6 @@ public class Dawn extends Activity implements OnClickListener, OnPreparedListene
 									new Runnable() {
 										public void run() {
 											updateBrightness();
-											updateSound();
 										}
 									});
 						}
@@ -177,8 +132,24 @@ public class Dawn extends Activity implements OnClickListener, OnPreparedListene
 		}
 	}
 
+	private void stopDawn()
+	{
+		Intent sound = new Intent(getApplicationContext(), DawnSound.class);
+		stopService(sound);
+		this.finish();
+	}
+	
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onKeyDown(int, android.view.KeyEvent)
+	 */
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		stopDawn();
+		return super.onKeyDown(keyCode, event);
+	}
+	
 	public void onClick(View v) {
-		finish();
+		stopDawn();
 	}
 
 	private void updateBrightness()
@@ -204,26 +175,6 @@ public class Dawn extends Activity implements OnClickListener, OnPreparedListene
 		findViewById(R.id.dawn_background).setBackgroundColor(grey_rgb);
 	}
 
-	private void updateSound()
-	{
-		if(m_soundInitialized)
-		{
-			if(System.currentTimeMillis() >= m_soundStartMillis)
-			{
-				if(!m_player.isPlaying())
-				{
-					m_player.prepareAsync();
-				}
-			}			
-		}
-	}
-
-	@Override
-	public void onPrepared(MediaPlayer mp) {
-		m_player.setLooping(true);
-		mp.start();
-	}
-
 	/* (non-Javadoc)
 	 * @see android.app.Activity#onStop()
 	 */
@@ -231,29 +182,7 @@ public class Dawn extends Activity implements OnClickListener, OnPreparedListene
 	protected void onStop() {
 		super.onStop();
 		m_timer.cancel();
-		if(m_soundInitialized)
-		{
-			if(m_player.isPlaying())
-			{
-				m_player.stop();
-			}
-			m_soundInitialized = false;
-		}
 		Log.d("FakeDawn", "Dawn Stopped.");
-	}
-
-	@Override
-	public boolean onError(MediaPlayer mp, int what, int extra) {
-		Log.e("FakeDawn", String.format("MediaPlayer error. what: %d, extra: %d", what, extra));
-		m_player.reset();
-		m_soundInitialized = false;
-		return true;
-	}
-
-	@Override
-	public void onCompletion(MediaPlayer mp) {
-		Log.w("FakeDawn", "Sound completed even if looping.");
-		m_player.stop();
 	}
 
 	/* (non-Javadoc)
@@ -264,4 +193,5 @@ public class Dawn extends Activity implements OnClickListener, OnPreparedListene
 		super.onSaveInstanceState(outState);
 		outState.putLong(ALARM_START_MILLIS, m_alarmStartMillis);
 	}
+
 }

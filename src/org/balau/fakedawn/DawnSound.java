@@ -54,7 +54,6 @@ public class DawnSound extends Service implements OnPreparedListener, OnCompleti
 	 */
 	@Override
 	public IBinder onBind(Intent intent) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -122,7 +121,6 @@ public class DawnSound extends Service implements OnPreparedListener, OnCompleti
 						e.printStackTrace();
 					}
 				}
-				Calendar rightNow = Calendar.getInstance();
 				long delay = m_soundStartMillis - Calendar.getInstance().getTimeInMillis();
 				m_timer = new Timer();
 				m_timer.schedule(
