@@ -43,8 +43,8 @@ public class Dawn extends Activity implements OnClickListener, OnPreparedListene
 	private static int TIMER_TICK_SECONDS = 10;
 	private static final String ALARM_START_MILLIS = "ALARM_START_MILLIS";
 
-	private long m_alarm_start_millis;
-	private long m_alarm_end_millis;
+	private long m_alarmStartMillis;
+	private long m_alarmEndMillis;
 	private Timer m_timer;
 
 	private long m_soundStartMillis;
@@ -104,22 +104,22 @@ public class Dawn extends Activity implements OnClickListener, OnPreparedListene
 		}
 		else
 		{
-			m_alarm_start_millis = rightNow.getTimeInMillis();
+			m_alarmStartMillis = rightNow.getTimeInMillis();
 			if(savedInstanceState != null)
 			{
 				if(savedInstanceState.containsKey(ALARM_START_MILLIS))
 				{
-					m_alarm_start_millis = savedInstanceState.getLong(ALARM_START_MILLIS);
+					m_alarmStartMillis = savedInstanceState.getLong(ALARM_START_MILLIS);
 				}
 			}
-			m_alarm_end_millis = m_alarm_start_millis + (1000*60*pref.getInt("duration", 15));
+			m_alarmEndMillis = m_alarmStartMillis + (1000*60*pref.getInt("duration", 15));
 
 			m_player.setOnPreparedListener(this);
 			m_player.setOnCompletionListener(this);
 			m_player.setOnErrorListener(this);
 			m_player.setAudioStreamType(AudioManager.STREAM_ALARM);
 			m_player.reset();
-			m_soundStartMillis = m_alarm_end_millis;
+			m_soundStartMillis = m_alarmEndMillis;
 
 			String sound = pref.getString("sound", "");
 			if(sound.isEmpty())
@@ -190,8 +190,8 @@ public class Dawn extends Activity implements OnClickListener, OnPreparedListene
 		int grey_rgb;
 
 		level_percent = 
-				(100 * (System.currentTimeMillis() - m_alarm_start_millis))
-				/ (m_alarm_end_millis - m_alarm_start_millis);
+				(100 * (System.currentTimeMillis() - m_alarmStartMillis))
+				/ (m_alarmEndMillis - m_alarmStartMillis);
 		if(level_percent < 1) { level_percent = 1; }
 		else if(level_percent > 100) { level_percent = 100; }
 
@@ -262,6 +262,6 @@ public class Dawn extends Activity implements OnClickListener, OnPreparedListene
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		outState.putLong(ALARM_START_MILLIS, m_alarm_start_millis);
+		outState.putLong(ALARM_START_MILLIS, m_alarmStartMillis);
 	}
 }
