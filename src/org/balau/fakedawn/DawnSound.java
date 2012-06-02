@@ -95,10 +95,6 @@ public class DawnSound extends Service implements OnPreparedListener, OnCompleti
 		if(!m_soundInitialized)
 		{
 			m_vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-			if(m_vibrator != null)
-			{
-				m_vibrate = intent.getBooleanExtra(EXTRA_VIBRATE, false);
-			}
 			
 			m_player.setOnPreparedListener(this);
 			m_player.setOnCompletionListener(this);
@@ -137,6 +133,11 @@ public class DawnSound extends Service implements OnPreparedListener, OnCompleti
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
+				}
+
+				if(m_vibrator != null)
+				{
+					m_vibrate = intent.getBooleanExtra(EXTRA_VIBRATE, false);
 				}
 
 				m_timer = new Timer();

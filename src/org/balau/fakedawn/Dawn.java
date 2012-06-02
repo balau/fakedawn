@@ -132,6 +132,7 @@ public class Dawn extends Activity implements OnClickListener {
 			m_alarmEndMillis = m_alarmStartMillis + (1000*60*pref.getInt("duration", 15));
 
 			Intent sound = new Intent(getApplicationContext(), DawnSound.class);
+			sound.putExtra(DawnSound.EXTRA_VIBRATE, pref.getBoolean("vibrate", false));
 			sound.putExtra(DawnSound.EXTRA_SOUND_MILLIS, m_alarmEndMillis);
 			sound.putExtra(DawnSound.EXTRA_SOUND_URI, pref.getString("sound", ""));
 			if(pref.contains("volume"))

@@ -84,7 +84,7 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		CheckBox cb;
 
 		cb = (CheckBox) findViewById(R.id.checkBoxAlarmEnabled);
-		cb.setChecked(pref.getBoolean("enabled", true));
+		cb.setChecked(pref.getBoolean("enabled", false));
 		cb.requestFocus();
 
 		cb = (CheckBox) findViewById(R.id.checkBoxMondays);
@@ -122,6 +122,9 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		if(volume < 0) volume = 0;
 		if(volume > maxVolume) volume = maxVolume;
 		seekBarVolume.setProgress(volume);
+
+		cb = (CheckBox) findViewById(R.id.checkBoxVibrate);
+		cb.setChecked(pref.getBoolean("vibrate", false));
 
 		updateSoundViews();
 
@@ -181,6 +184,9 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 
 			SeekBar sb = (SeekBar)findViewById(R.id.seekBarVolume);
 			editor.putInt("volume", sb.getProgress());
+			
+			cb = (CheckBox) findViewById(R.id.checkBoxVibrate);
+			editor.putBoolean("vibrate", cb.isChecked());
 
 			editor.putBoolean("enabled", true);
 			editor.commit();
@@ -223,16 +229,20 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 	{
 		Button soundButton = (Button) findViewById(R.id.buttonSound);
 		SeekBar seekBarVolume = (SeekBar)findViewById(R.id.seekBarVolume);
+		CheckBox checkBoxVibrate = (CheckBox) findViewById(R.id.checkBoxVibrate);
+
 		if(m_soundUri == null)
 		{
 			soundButton.setText("Silent");
 			seekBarVolume.setEnabled(false);
+			checkBoxVibrate.setEnabled(false);
 		}
 		else
 		{
 			String soundTitle = RingtoneManager.getRingtone(this, m_soundUri).getTitle(this);	
 			soundButton.setText(soundTitle);
 			seekBarVolume.setEnabled(true);
+			checkBoxVibrate.setEnabled(true);
 		}
 		m_preview.setSoundUri(this, m_soundUri);
 	}
