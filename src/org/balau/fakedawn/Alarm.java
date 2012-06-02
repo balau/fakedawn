@@ -37,20 +37,6 @@ public class Alarm extends Service {
 		return null;
 	}
 
-	private PendingIntent getDawnPendingIntent()
-	{
-		Intent openDawn = new Intent(getApplicationContext(), Dawn.class);
-		openDawn.setFlags(
-				Intent.FLAG_ACTIVITY_NEW_TASK|
-				Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS|
-				Intent.FLAG_FROM_BACKGROUND);
-		return PendingIntent.getActivity(
-				getApplicationContext(), 
-				0, 
-				openDawn,
-				0);	
-	}
-
 	/* (non-Javadoc)
 	 * @see android.app.Service#onStartCommand(android.content.Intent, int, int)
 	 */
@@ -60,7 +46,18 @@ public class Alarm extends Service {
 
 		AlarmManager am = (AlarmManager) getSystemService(ALARM_SERVICE);
 
-		am.cancel(getDawnPendingIntent());
+		Intent openDawn = new Intent(getApplicationContext(), Dawn.class);
+		openDawn.setFlags(
+				Intent.FLAG_ACTIVITY_NEW_TASK|
+				Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS|
+				Intent.FLAG_FROM_BACKGROUND);
+		PendingIntent openDawnPendingIntent = PendingIntent.getActivity(
+				getApplicationContext(), 
+				0, 
+				openDawn,
+				0);
+		
+		am.cancel(openDawnPendingIntent);
 
 		if(pref.getBoolean("enabled", false))
 		{
@@ -78,7 +75,7 @@ public class Alarm extends Service {
 					AlarmManager.RTC_WAKEUP, 
 					nextAlarmTime.getTimeInMillis(),
 					AlarmManager.INTERVAL_DAY,
-					getDawnPendingIntent());
+					openDawnPendingIntent);
 			Log.d("FakeDawn", 
 					String.format("Alarm set for %02d:%02d.",
 							nextAlarmTime.get(Calendar.HOUR_OF_DAY),
