@@ -20,6 +20,7 @@ package org.balau.fakedawn;
 
 import java.io.IOException;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -32,6 +33,7 @@ import android.media.MediaPlayer.OnErrorListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.net.Uri;
 import android.os.IBinder;
+import android.os.Vibrator;
 import android.util.Log;
 
 /**
@@ -43,11 +45,15 @@ public class DawnSound extends Service implements OnPreparedListener, OnCompleti
 	public static final String EXTRA_SOUND_URI = "org.balau.fakedawn.DawnSound.EXTRA_SOUND_URI";
 	public static final String EXTRA_SOUND_MILLIS = "org.balau.fakedawn.DawnSound.EXTRA_SOUND_MILLIS";
 	public static final String EXTRA_SOUND_VOLUME = "org.balau.fakedawn.DawnSound.EXTRA_SOUND_VOLUME";
+	public static final String EXTRA_VIBRATE = "org.balau.fakedawn.DawnSound.EXTRA_VIBRATE";
 	
 	private Timer m_timer = null;
 	private long m_soundStartMillis;
 	private MediaPlayer m_player = new MediaPlayer();
 	private boolean m_soundInitialized = false;
+	
+	private Vibrator m_vibrator = null;
+	private boolean m_vibrate = false;
 
 	/* (non-Javadoc)
 	 * @see android.app.Service#onBind(android.content.Intent)
@@ -73,6 +79,11 @@ public class DawnSound extends Service implements OnPreparedListener, OnCompleti
 		}
 		if(m_timer != null)
 			m_timer.cancel();
+		if(m_vibrate)
+		{
+			m_vibrate = false;
+			m_vibrator.cancel();
+		}
 	}
 
 	/* (non-Javadoc)
@@ -80,9 +91,15 @@ public class DawnSound extends Service implements OnPreparedListener, OnCompleti
 	 */
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		
+				
 		if(!m_soundInitialized)
 		{
+			m_vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+			if(m_vibrator != null)
+			{
+				m_vibrate = intent.getBooleanExtra(EXTRA_VIBRATE, false);
+			}
+			
 			m_player.setOnPreparedListener(this);
 			m_player.setOnCompletionListener(this);
 			m_player.setOnErrorListener(this);
@@ -121,7 +138,7 @@ public class DawnSound extends Service implements OnPreparedListener, OnCompleti
 						e.printStackTrace();
 					}
 				}
-				long delay = m_soundStartMillis - Calendar.getInstance().getTimeInMillis();
+
 				m_timer = new Timer();
 				m_timer.schedule(
 						new TimerTask() {
@@ -135,8 +152,14 @@ public class DawnSound extends Service implements OnPreparedListener, OnCompleti
 										m_player.prepareAsync();
 									}
 								}
+								if(m_vibrate)
+								{
+									m_vibrator.vibrate(
+											new long[] {0, 1000},
+											Integer.MAX_VALUE);
+								}
 							}
-						}, Math.max(0, delay));
+						}, new Date(m_soundStartMillis));
 				Log.d("FakeDawn", "Sound scheduled.");
 			}
 		}
