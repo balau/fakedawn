@@ -46,14 +46,15 @@ public class DawnSound extends Service implements OnPreparedListener, OnCompleti
 	public static final String EXTRA_SOUND_MILLIS = "org.balau.fakedawn.DawnSound.EXTRA_SOUND_MILLIS";
 	public static final String EXTRA_SOUND_VOLUME = "org.balau.fakedawn.DawnSound.EXTRA_SOUND_VOLUME";
 	public static final String EXTRA_VIBRATE = "org.balau.fakedawn.DawnSound.EXTRA_VIBRATE";
-	
+
 	private Timer m_timer = null;
 	private long m_soundStartMillis;
 	private MediaPlayer m_player = new MediaPlayer();
 	private boolean m_soundInitialized = false;
-	
+
 	private Vibrator m_vibrator = null;
 	private boolean m_vibrate = false;
+	private long[] m_vibratePattern = {0, 1000, 1000};
 
 	/* (non-Javadoc)
 	 * @see android.app.Service#onBind(android.content.Intent)
@@ -91,17 +92,15 @@ public class DawnSound extends Service implements OnPreparedListener, OnCompleti
 	 */
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-				
+
 		if(!m_soundInitialized)
 		{
-			m_vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-			
 			m_player.setOnPreparedListener(this);
 			m_player.setOnCompletionListener(this);
 			m_player.setOnErrorListener(this);
 			m_player.setAudioStreamType(AudioManager.STREAM_ALARM);
 			m_player.reset();
-			
+
 			m_soundStartMillis = intent.getLongExtra(EXTRA_SOUND_MILLIS, 0);
 
 			String sound = intent.getStringExtra(EXTRA_SOUND_URI);
@@ -135,9 +134,14 @@ public class DawnSound extends Service implements OnPreparedListener, OnCompleti
 					}
 				}
 
-				if(m_vibrator != null)
+				m_vibrate = intent.getBooleanExtra(EXTRA_VIBRATE, false);
+				if(m_vibrate)
 				{
-					m_vibrate = intent.getBooleanExtra(EXTRA_VIBRATE, false);
+					m_vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+					if(m_vibrator == null)
+					{
+						m_vibrate = false;
+					}
 				}
 
 				m_timer = new Timer();
@@ -155,9 +159,7 @@ public class DawnSound extends Service implements OnPreparedListener, OnCompleti
 								}
 								if(m_vibrate)
 								{
-									m_vibrator.vibrate(
-											new long[] {0, 1000},
-											Integer.MAX_VALUE);
+									m_vibrator.vibrate(m_vibratePattern, 0);
 								}
 							}
 						}, new Date(m_soundStartMillis));
@@ -172,7 +174,7 @@ public class DawnSound extends Service implements OnPreparedListener, OnCompleti
 		m_player.setLooping(true);
 		m_player.start();
 	}
-	
+
 	@Override
 	public boolean onError(MediaPlayer mp, int what, int extra) {
 		Log.e("FakeDawn", String.format("MediaPlayer error. what: %d, extra: %d", what, extra));
