@@ -37,6 +37,7 @@ public class Dawn extends Activity implements OnClickListener {
 
 	private static int TIMER_TICK_SECONDS = 10;
 	private static final String ALARM_START_MILLIS = "ALARM_START_MILLIS";
+	private static int COLOR_OPAQUE = 0xFF000000;
 
 	private long m_alarmStartMillis;
 	private long m_alarmEndMillis;
@@ -205,8 +206,6 @@ public class Dawn extends Activity implements OnClickListener {
 	
 	private void updateBrightness()
 	{
-		float brightnessStep = 0.01F;
-		float brightness; 
 		long level_percent;
 		long millis_from_start;
 		long dawnDurationMillis;
@@ -215,15 +214,10 @@ public class Dawn extends Activity implements OnClickListener {
 		millis_from_start = System.currentTimeMillis() - m_alarmStartMillis; 
 		dawnDurationMillis = m_alarmEndMillis - m_alarmStartMillis; 
 		if(dawnDurationMillis <= 0) dawnDurationMillis = 1;
-		
 		level_percent = (100 * millis_from_start) / dawnDurationMillis;
-		if(level_percent < 1) { level_percent = 1; }
-		else if(level_percent > 100) { level_percent = 100; }
-
-		brightness = brightnessStep * level_percent;
-		Log.d("HelloAndroid", String.format("b = %f", brightness));
-
-		rgb = 0xFF000000 | getColor(m_dawnColor, (int)level_percent);
+		if(level_percent < 0) level_percent = 0;
+		if(level_percent > 100) level_percent = 100;
+		rgb = COLOR_OPAQUE | getColor(m_dawnColor, (int)level_percent);
 		findViewById(R.id.dawn_background).setBackgroundColor(rgb);
 	}
 
