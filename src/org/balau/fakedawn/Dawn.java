@@ -208,11 +208,15 @@ public class Dawn extends Activity implements OnClickListener {
 		float brightnessStep = 0.01F;
 		float brightness; 
 		long level_percent;
+		long millis_from_start;
+		long dawnDurationMillis;
 		int rgb;
 
-		level_percent = 
-				(100 * (System.currentTimeMillis() - m_alarmStartMillis))
-				/ (m_alarmEndMillis - m_alarmStartMillis);
+		millis_from_start = System.currentTimeMillis() - m_alarmStartMillis; 
+		dawnDurationMillis = m_alarmEndMillis - m_alarmStartMillis; 
+		if(dawnDurationMillis <= 0) dawnDurationMillis = 1;
+		
+		level_percent = (100 * millis_from_start) / dawnDurationMillis;
 		if(level_percent < 1) { level_percent = 1; }
 		else if(level_percent > 100) { level_percent = 100; }
 
