@@ -21,10 +21,13 @@ package org.balau.fakedawn;
 
 import java.io.IOException;
 
+import org.balau.fakedawn.ColorPickerDialog.OnColorChangedListener;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.PorterDuff;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
@@ -47,12 +50,16 @@ import android.widget.TimePicker;
  * @author francesco
  *
  */
-public class Preferences extends Activity implements OnClickListener, OnSeekBarChangeListener {
+public class Preferences extends Activity implements OnClickListener, OnSeekBarChangeListener, OnColorChangedListener {
 
 	private static int REQUEST_PICK_SOUND = 0;
+	private static int COLOR_OPAQUE = 0xFF000000;
+	private static int COLOR_RGB_MASK = 0x00FFFFFF;
+
 	private Uri m_soundUri = null;
 	private VolumePreview m_preview = new VolumePreview();
-
+	private int m_dawnColor;
+	
 	/* (non-Javadoc)
 	 * @see android.app.Activity#onCreate(android.os.Bundle)
 	 */
@@ -105,6 +112,8 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		TextView tv = (TextView) findViewById(R.id.editTextMinutes);
 		tv.setText(String.format("%d",pref.getInt("duration", 15)));
 
+		updateColor(pref.getInt("color", 0x4040FF));
+
 		String sound = pref.getString("sound", "");
 		if(sound.isEmpty())
 		{
@@ -140,6 +149,16 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 
 	}
 
+	private void updateColor(int color)
+	{
+		m_dawnColor = color & COLOR_RGB_MASK;
+		Button colorButton = (Button) findViewById(R.id.buttonColor);
+		colorButton.getBackground().setColorFilter(
+				m_dawnColor|COLOR_OPAQUE,
+				PorterDuff.Mode.SRC);
+		colorButton.setOnClickListener(this);
+	}
+	
 	public void onClick(View v) {
 		if(v.getId() == R.id.buttonSave)
 		{
@@ -151,6 +170,8 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 			editor.putInt("hour", tp.getCurrentHour());
 			editor.putInt("minute", tp.getCurrentMinute());
 
+			editor.putInt("color", m_dawnColor);
+			
 			CheckBox cb;
 
 			cb = (CheckBox) findViewById(R.id.checkBoxAlarmEnabled);
@@ -222,6 +243,11 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 						m_soundUri);
 			}
 			startActivityForResult(pickSound, REQUEST_PICK_SOUND);
+		}
+		else if(v.getId() == R.id.buttonColor)
+		{
+			ColorPickerDialog colorDialog = new ColorPickerDialog(this, this, m_dawnColor);
+			colorDialog.show();
 		}
 	}
 
@@ -369,5 +395,10 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 			m_player.stop();
 		}
 
+	}
+
+	@Override
+	public void colorChanged(int color) {
+		updateColor(color);		
 	}
 }

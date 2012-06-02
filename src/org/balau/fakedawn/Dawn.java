@@ -42,7 +42,7 @@ public class Dawn extends Activity implements OnClickListener {
 	private long m_alarmEndMillis;
 	private Timer m_timer;
 
-	private int m_dawnColor = 0x4040FF;
+	private int m_dawnColor;
 	
 	private Calendar getAlarmStart(SharedPreferences pref)
 	{

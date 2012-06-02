@@ -56,6 +56,12 @@
                 android:inputType="number"
                 android:text="30" />
 
+            <Button
+                android:id="@+id/buttonColor"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Dawn Color" />
+
             <TextView
                 android:id="@+id/textView3"
                 android:layout_width="wrap_content"
