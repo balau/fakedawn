@@ -124,6 +124,9 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 			m_soundUri = Uri.parse(sound);
 		}
 
+		tv = (TextView) findViewById(R.id.editTextSoundDelay);
+		tv.setText(String.format("%d",pref.getInt("sound_delay", 15)));
+
 		AudioManager am = (AudioManager)getSystemService(AUDIO_SERVICE);
 		int maxVolume = am.getStreamMaxVolume(AudioManager.STREAM_ALARM);
 		seekBarVolume.setMax(maxVolume);
@@ -203,6 +206,9 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 				editor.putString("sound", m_soundUri.toString());
 			}
 
+			tv = (TextView) findViewById(R.id.editTextSoundDelay);
+			editor.putInt("sound_delay", Integer.parseInt(tv.getText().toString()));
+			
 			SeekBar sb = (SeekBar)findViewById(R.id.seekBarVolume);
 			editor.putInt("volume", sb.getProgress());
 			
@@ -256,20 +262,23 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		Button soundButton = (Button) findViewById(R.id.buttonSound);
 		SeekBar seekBarVolume = (SeekBar)findViewById(R.id.seekBarVolume);
 		CheckBox checkBoxVibrate = (CheckBox) findViewById(R.id.checkBoxVibrate);
-
-		if(m_soundUri == null)
-		{
-			soundButton.setText("Silent");
-			seekBarVolume.setEnabled(false);
-			checkBoxVibrate.setEnabled(false);
-		}
-		else
+		TextView textViewSoundDelay = (TextView) findViewById(R.id.editTextSoundDelay);
+		
+		boolean soundViewsEnabled = (m_soundUri != null);
+		
+		if(soundViewsEnabled)
 		{
 			String soundTitle = RingtoneManager.getRingtone(this, m_soundUri).getTitle(this);	
 			soundButton.setText(soundTitle);
-			seekBarVolume.setEnabled(true);
-			checkBoxVibrate.setEnabled(true);
 		}
+		else
+		{
+			soundButton.setText("Silent");
+		}
+		seekBarVolume.setEnabled(soundViewsEnabled);
+		checkBoxVibrate.setEnabled(soundViewsEnabled);
+		textViewSoundDelay.setEnabled(soundViewsEnabled);
+		
 		m_preview.setSoundUri(this, m_soundUri);
 	}
 
