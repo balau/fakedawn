@@ -42,6 +42,32 @@ public class Dawn extends Activity implements OnClickListener {
 	private long m_alarmEndMillis;
 	private Timer m_timer;
 
+	private Calendar getAlarmStart(SharedPreferences pref)
+	{
+		Calendar rightNow = Calendar.getInstance();
+		
+		long rightNowMillis = rightNow.getTimeInMillis();
+		int hour = pref.getInt("hour", 8);
+		int minute = pref.getInt("minute", 0);
+		Calendar alarmStart = (Calendar) rightNow.clone();
+		alarmStart.set(Calendar.HOUR_OF_DAY, hour);
+		alarmStart.set(Calendar.MINUTE, minute);
+		long halfDayMillis = 1000L*60L*60L*12L; 
+		long alarmStartMillis;
+		alarmStartMillis = alarmStart.getTimeInMillis();
+ 
+		if(alarmStartMillis - rightNowMillis > halfDayMillis)
+		{
+			alarmStart.add(Calendar.DAY_OF_YEAR, -1);
+		}
+		else if(alarmStartMillis - rightNowMillis < -halfDayMillis)
+		{
+			alarmStart.add(Calendar.DAY_OF_YEAR, 1);
+		}
+		
+		return alarmStart;
+	}
+	
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -61,9 +87,9 @@ public class Dawn extends Activity implements OnClickListener {
 
 		SharedPreferences pref = getApplicationContext().getSharedPreferences("main", MODE_PRIVATE);
 		String day;
-		Calendar rightNow = Calendar.getInstance();
+		Calendar alarmStart = getAlarmStart(pref);
 
-		switch (rightNow.get(Calendar.DAY_OF_WEEK)) {
+		switch (alarmStart.get(Calendar.DAY_OF_WEEK)) {
 		case Calendar.MONDAY:
 			day = "mondays";
 			break;
@@ -95,7 +121,7 @@ public class Dawn extends Activity implements OnClickListener {
 		}
 		else
 		{
-			m_alarmStartMillis = rightNow.getTimeInMillis();
+			m_alarmStartMillis = alarmStart.getTimeInMillis();
 			if(savedInstanceState != null)
 			{
 				if(savedInstanceState.containsKey(ALARM_START_MILLIS))
