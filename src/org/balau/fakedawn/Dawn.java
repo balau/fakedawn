@@ -42,6 +42,8 @@ public class Dawn extends Activity implements OnClickListener {
 	private long m_alarmEndMillis;
 	private Timer m_timer;
 
+	private int m_dawnColor = 0x4040FF;
+	
 	private Calendar getAlarmStart(SharedPreferences pref)
 	{
 		Calendar rightNow = Calendar.getInstance();
@@ -131,6 +133,7 @@ public class Dawn extends Activity implements OnClickListener {
 			}
 			m_alarmEndMillis = m_alarmStartMillis + (1000*60*pref.getInt("duration", 15));
 
+			m_dawnColor = pref.getInt("color", 0x4040FF);
 			Intent sound = new Intent(getApplicationContext(), DawnSound.class);
 			sound.putExtra(DawnSound.EXTRA_VIBRATE, pref.getBoolean("vibrate", false));
 			sound.putExtra(DawnSound.EXTRA_SOUND_MILLIS, m_alarmEndMillis);
@@ -179,13 +182,33 @@ public class Dawn extends Activity implements OnClickListener {
 		stopDawn();
 	}
 
+	private int getColor(int rgb, int percent)
+	{
+		int r, g, b;
+		int rgb_new;
+		
+		r = (rgb >> 16)&0xFF;
+		g = (rgb >>  8)&0xFF;
+		b = (rgb >>  0)&0xFF;
+		
+		if(percent > 100) percent = 100;
+		if(percent < 0) percent = 0;
+		
+		r = (r*percent)/100;
+		g = (g*percent)/100;
+		b = (b*percent)/100;
+		
+		rgb_new = (r<<16) | (g<<8) | (b<<0);
+		
+		return rgb_new;
+	}
+	
 	private void updateBrightness()
 	{
 		float brightnessStep = 0.01F;
 		float brightness; 
 		long level_percent;
-		int grey_level;
-		int grey_rgb;
+		int rgb;
 
 		level_percent = 
 				(100 * (System.currentTimeMillis() - m_alarmStartMillis))
@@ -196,10 +219,8 @@ public class Dawn extends Activity implements OnClickListener {
 		brightness = brightnessStep * level_percent;
 		Log.d("HelloAndroid", String.format("b = %f", brightness));
 
-		grey_level = (int)(brightness * (float)0xFF);
-		if(grey_level > 0xFF) grey_level = 0xFF;
-		grey_rgb = 0xFF000000 + (grey_level * 0x010101);
-		findViewById(R.id.dawn_background).setBackgroundColor(grey_rgb);
+		rgb = 0xFF000000 | getColor(m_dawnColor, (int)level_percent);
+		findViewById(R.id.dawn_background).setBackgroundColor(rgb);
 	}
 
 	/* (non-Javadoc)
