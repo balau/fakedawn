@@ -19,7 +19,6 @@
 package org.balau.fakedawn;
 
 import java.io.IOException;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
