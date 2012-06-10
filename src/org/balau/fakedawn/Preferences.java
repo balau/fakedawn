@@ -215,7 +215,6 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 			cb = (CheckBox) findViewById(R.id.checkBoxVibrate);
 			editor.putBoolean("vibrate", cb.isChecked());
 
-			editor.putBoolean("enabled", true);
 			editor.commit();
 
 			Intent updateAlarm = new Intent(getApplicationContext(), Alarm.class);
