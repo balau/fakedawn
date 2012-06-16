@@ -163,8 +163,9 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 	}
 	
 	public void onClick(View v) {
-		if(v.getId() == R.id.buttonSave)
+		switch(v.getId())
 		{
+		case R.id.buttonSave:
 			SharedPreferences pref = getApplicationContext().getSharedPreferences("main", MODE_PRIVATE);
 			SharedPreferences.Editor editor = pref.edit();
 
@@ -221,13 +222,11 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 			getApplicationContext().startService(updateAlarm);
 			Log.d("FakeDawn", "Preferences saved.");
 			finish();
-		}
-		else if(v.getId() == R.id.buttonDiscard)
-		{
+			break;
+		case R.id.buttonDiscard:
 			finish();
-		}
-		else if(v.getId() == R.id.buttonSound)
-		{
+			break;
+		case R.id.buttonSound:
 			Intent pickSound = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
 			pickSound.putExtra(
 					RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT,
@@ -248,11 +247,11 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 						m_soundUri);
 			}
 			startActivityForResult(pickSound, REQUEST_PICK_SOUND);
-		}
-		else if(v.getId() == R.id.buttonColor)
-		{
+			break;
+		case R.id.buttonColor:
 			ColorPickerDialog colorDialog = new ColorPickerDialog(this, this, m_dawnColor);
 			colorDialog.show();
+			break;
 		}
 	}
 
