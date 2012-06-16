@@ -422,11 +422,11 @@ public class IntervalSlider extends View {
 
 			float distanceLeft = getDistance(x,y,w*m_leftCursorPos, leftCursorEnd);
 			float distanceRight = getDistance(x,y,w*m_rightCursorPos, rightCursorEnd);
-			if(distanceLeft < h/8 && distanceLeft <= distanceRight)
+			if(distanceLeft < cursorZoneHeight/2 && distanceLeft <= distanceRight)
 			{
 				return TOUCH_LEFT;			
 			}
-			else if(distanceRight < h/8 && distanceRight <= distanceLeft)
+			else if(distanceRight < cursorZoneHeight/2 && distanceRight <= distanceLeft)
 			{
 				return TOUCH_RIGHT;
 			}
@@ -491,58 +491,58 @@ public class IntervalSlider extends View {
 			return false;
 		}		
 	}
-	
-    private static class SavedState extends BaseSavedState {
-        float leftPos;
-        float rightPos;
 
-        public SavedState(Parcel source) {
-            super(source);
+	private static class SavedState extends BaseSavedState {
+		float leftPos;
+		float rightPos;
 
-            leftPos = source.readFloat();
-            rightPos = source.readFloat();
-        }
+		public SavedState(Parcel source) {
+			super(source);
 
-        @Override
-        public void writeToParcel(Parcel dest, int flags) {
-            super.writeToParcel(dest, flags);
+			leftPos = source.readFloat();
+			rightPos = source.readFloat();
+		}
 
-            dest.writeFloat(rightPos);
-            dest.writeFloat(leftPos);
-        }
+		@Override
+		public void writeToParcel(Parcel dest, int flags) {
+			super.writeToParcel(dest, flags);
 
-        public SavedState(Parcelable superState) {
-            super(superState);
-        }
+			dest.writeFloat(rightPos);
+			dest.writeFloat(leftPos);
+		}
 
-    }
-    
+		public SavedState(Parcelable superState) {
+			super(superState);
+		}
+
+	}
+
 	/* (non-Javadoc)
 	 * @see android.view.View#onRestoreInstanceState(android.os.Parcelable)
 	 */
-	@Override
-	protected void onRestoreInstanceState(Parcelable state) {
-        if (!state.getClass().equals(SavedState.class)) {
-            // Didn't save state for us in onSaveInstanceState
-            super.onRestoreInstanceState(state);
-            return;
-        }
+	 @Override
+	 protected void onRestoreInstanceState(Parcelable state) {
+		 if (!state.getClass().equals(SavedState.class)) {
+			 // Didn't save state for us in onSaveInstanceState
+			 super.onRestoreInstanceState(state);
+			 return;
+		 }
 
-        SavedState s = (SavedState) state;
-        super.onRestoreInstanceState(s.getSuperState());
-        setRightPos(s.rightPos);
-        setLeftPos(s.leftPos);
-    }
+		 SavedState s = (SavedState) state;
+		 super.onRestoreInstanceState(s.getSuperState());
+		 setRightPos(s.rightPos);
+		 setLeftPos(s.leftPos);
+	 }
 
-	/* (non-Javadoc)
-	 * @see android.view.View#onSaveInstanceState()
-	 */
-	@Override
-	protected Parcelable onSaveInstanceState() {
-		Parcelable p = super.onSaveInstanceState(); 
-		SavedState s = new SavedState(p);
-		s.leftPos = getLeftPos();
-		s.rightPos = getRightPos();
-		return s;
-	}    
+	 /* (non-Javadoc)
+	  * @see android.view.View#onSaveInstanceState()
+	  */
+	 @Override
+	 protected Parcelable onSaveInstanceState() {
+		 Parcelable p = super.onSaveInstanceState(); 
+		 SavedState s = new SavedState(p);
+		 s.leftPos = getLeftPos();
+		 s.rightPos = getRightPos();
+		 return s;
+	 }    
 }
