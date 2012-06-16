@@ -79,10 +79,15 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		discardButton.setOnClickListener(this);
 		Button soundButton = (Button) findViewById(R.id.buttonSound);
 		soundButton.setOnClickListener(this);
-
+		Button colorButton = (Button) findViewById(R.id.buttonColor);
+		colorButton.setOnClickListener(this);
+		
 		SeekBar seekBarVolume = (SeekBar)findViewById(R.id.seekBarVolume);
 		seekBarVolume.setOnSeekBarChangeListener(this);
 
+		TimeSlider ts = (TimeSlider)findViewById(R.id.timeSlider1);
+		ts.setOnClickListener(this);
+		
 		SharedPreferences pref = getApplicationContext().getSharedPreferences("main", MODE_PRIVATE);
 
 		tp.setCurrentHour(pref.getInt("hour", 8));
@@ -159,10 +164,13 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		colorButton.getBackground().setColorFilter(
 				m_dawnColor|COLOR_OPAQUE,
 				PorterDuff.Mode.SRC);
-		colorButton.setOnClickListener(this);
+		
+		TimeSlider ts = (TimeSlider)findViewById(R.id.timeSlider1);
+		ts.setRectColor(m_dawnColor|COLOR_OPAQUE);
 	}
 	
 	public void onClick(View v) {
+		ColorPickerDialog colorDialog;
 		switch(v.getId())
 		{
 		case R.id.buttonSave:
@@ -249,9 +257,22 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 			startActivityForResult(pickSound, REQUEST_PICK_SOUND);
 			break;
 		case R.id.buttonColor:
-			ColorPickerDialog colorDialog = new ColorPickerDialog(this, this, m_dawnColor);
+			colorDialog = new ColorPickerDialog(this, this, m_dawnColor);
 			colorDialog.show();
 			break;
+		case R.id.timeSlider1:
+			TimeSlider ts = (TimeSlider)v;
+			switch(ts.getLastTouched())
+			{
+			case TimeSlider.TOUCH_ALL:
+				colorDialog = new ColorPickerDialog(this, this, m_dawnColor);
+				colorDialog.show();
+				break;
+			case TimeSlider.TOUCH_LEFT:
+				break;
+			case TimeSlider.TOUCH_RIGHT:
+				break;
+			}
 		}
 	}
 

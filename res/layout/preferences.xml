@@ -32,6 +32,11 @@
                 android:text="Dawn Start Time"
                 android:textAppearance="?android:attr/textAppearanceMedium" />
 
+            <org.balau.fakedawn.TimeSlider
+                android:id="@+id/timeSlider1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
             <TimePicker
                 android:id="@+id/timePicker1"
                 android:layout_width="wrap_content"
