@@ -22,13 +22,14 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnGestureListener;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.ScaleGestureDetector.OnScaleGestureListener;
-import android.view.View.MeasureSpec;
 import android.view.View;
 
 /**
@@ -106,7 +107,7 @@ public class IntervalSlider extends View {
 	protected int getSuggestedMinimumHeight() {
 		return Math.max(
 				super.getSuggestedMinimumHeight(),
-				300);
+				150);
 	}
 
 	/* (non-Javadoc)
@@ -234,7 +235,7 @@ public class IntervalSlider extends View {
 	private int getCursorZoneHeight(int measuredHeight)
 	{
 		int cursorZoneMinHeight = 100; 
-		int rectMinHeight = 25;
+		int rectMinHeight = 50;
 		int cursorZoneHeight;
 
 		if((measuredHeight < (cursorZoneMinHeight+rectMinHeight)) ||
@@ -490,4 +491,58 @@ public class IntervalSlider extends View {
 			return false;
 		}		
 	}
+	
+    private static class SavedState extends BaseSavedState {
+        float leftPos;
+        float rightPos;
+
+        public SavedState(Parcel source) {
+            super(source);
+
+            leftPos = source.readFloat();
+            rightPos = source.readFloat();
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            super.writeToParcel(dest, flags);
+
+            dest.writeFloat(rightPos);
+            dest.writeFloat(leftPos);
+        }
+
+        public SavedState(Parcelable superState) {
+            super(superState);
+        }
+
+    }
+    
+	/* (non-Javadoc)
+	 * @see android.view.View#onRestoreInstanceState(android.os.Parcelable)
+	 */
+	@Override
+	protected void onRestoreInstanceState(Parcelable state) {
+        if (!state.getClass().equals(SavedState.class)) {
+            // Didn't save state for us in onSaveInstanceState
+            super.onRestoreInstanceState(state);
+            return;
+        }
+
+        SavedState s = (SavedState) state;
+        super.onRestoreInstanceState(s.getSuperState());
+        setRightPos(s.rightPos);
+        setLeftPos(s.leftPos);
+    }
+
+	/* (non-Javadoc)
+	 * @see android.view.View#onSaveInstanceState()
+	 */
+	@Override
+	protected Parcelable onSaveInstanceState() {
+		Parcelable p = super.onSaveInstanceState(); 
+		SavedState s = new SavedState(p);
+		s.leftPos = getLeftPos();
+		s.rightPos = getRightPos();
+		return s;
+	}    
 }
