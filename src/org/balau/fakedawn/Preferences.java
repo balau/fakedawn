@@ -24,6 +24,8 @@ import java.io.IOException;
 import org.balau.fakedawn.ColorPickerDialog.OnColorChangedListener;
 
 import android.app.Activity;
+import android.app.TimePickerDialog;
+import android.app.TimePickerDialog.OnTimeSetListener;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -50,7 +52,7 @@ import android.widget.TimePicker;
  * @author francesco
  *
  */
-public class Preferences extends Activity implements OnClickListener, OnSeekBarChangeListener, OnColorChangedListener {
+public class Preferences extends Activity implements OnClickListener, OnSeekBarChangeListener, OnColorChangedListener, OnTimeSetListener {
 
 	private static int REQUEST_PICK_SOUND = 0;
 	private static int COLOR_OPAQUE = 0xFF000000;
@@ -262,6 +264,7 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 			break;
 		case R.id.timeSlider1:
 			TimeSlider ts = (TimeSlider)v;
+			TimePickerDialog tpd;
 			switch(ts.getLastTouched())
 			{
 			case TimeSlider.TOUCH_ALL:
@@ -269,8 +272,22 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 				colorDialog.show();
 				break;
 			case TimeSlider.TOUCH_LEFT:
+				tpd = new TimePickerDialog(
+						this, 
+						this, 
+						ts.getLeftTime().getHourOfDay(),
+						ts.getLeftTime().getMinute(),
+						true);
+				tpd.show();
 				break;
 			case TimeSlider.TOUCH_RIGHT:
+				tpd = new TimePickerDialog(
+						this, 
+						this, 
+						ts.getRightTime().getHourOfDay(),
+						ts.getRightTime().getMinute(),
+						true);
+				tpd.show();
 				break;
 			}
 		}
@@ -428,5 +445,21 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 	@Override
 	public void colorChanged(int color) {
 		updateColor(color);		
+	}
+
+	@Override
+	public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+		TimeSlider ts = (TimeSlider)findViewById(R.id.timeSlider1);
+		switch(ts.getLastTouched())
+		{
+		case TimeSlider.TOUCH_ALL:
+			break;
+		case TimeSlider.TOUCH_LEFT:
+			ts.setLeftTime(hourOfDay, minute);
+			break;
+		case TimeSlider.TOUCH_RIGHT:
+			ts.setRightTime(hourOfDay, minute);
+			break;
+		}
 	}
 }
