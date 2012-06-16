@@ -78,37 +78,39 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 
 		setContentView(R.layout.preferences);
 
-		TimePicker tp = (TimePicker) findViewById(R.id.timePicker1);
-		tp.setIs24HourView(true);
-		tp.setAddStatesFromChildren(true);
-
 		Button saveButton = (Button) findViewById(R.id.buttonSave);
 		saveButton.setOnClickListener(this);
 		Button discardButton = (Button) findViewById(R.id.buttonDiscard);
 		discardButton.setOnClickListener(this);
 		Button soundButton = (Button) findViewById(R.id.buttonSound);
 		soundButton.setOnClickListener(this);
-		Button colorButton = (Button) findViewById(R.id.buttonColor);
-		colorButton.setOnClickListener(this);
 		
 		SeekBar seekBarVolume = (SeekBar)findViewById(R.id.seekBarVolume);
 		seekBarVolume.setOnSeekBarChangeListener(this);
 
-		TimeSlider ts = (TimeSlider)findViewById(R.id.timeSlider1);
-		ts.setOnClickListener(this);
-		ts = (TimeSlider)findViewById(R.id.timeSlider2);
-		ts.setOnClickListener(this);
-		
 		SharedPreferences pref = getApplicationContext().getSharedPreferences("main", MODE_PRIVATE);
-
-		tp.setCurrentHour(pref.getInt("hour", 8));
-		tp.setCurrentMinute(pref.getInt("minute", 0));
 
 		CheckBox cb;
 
 		cb = (CheckBox) findViewById(R.id.checkBoxAlarmEnabled);
 		cb.setChecked(pref.getBoolean("enabled", false));
 		cb.requestFocus();
+
+		TimeSlider ts = (TimeSlider)findViewById(R.id.timeSlider1);
+		ts.setOnClickListener(this);
+		ts.setLeftTime(
+				pref.getInt("hour", 8),
+				pref.getInt("minute", 0));
+		DawnTime dawnEnd = new DawnTime( 
+				ts.getLeftTime().getMinutes() + pref.getInt("duration", 15));
+		ts.setRightTime(dawnEnd.getHour(), dawnEnd.getMinute());
+		
+		ts = (TimeSlider)findViewById(R.id.timeSlider2);
+		ts.setOnClickListener(this);
+		DawnTime soundStart = new DawnTime( 
+				dawnEnd.getMinutes() + pref.getInt("sound_delay", 15));
+		ts.setLeftTime(soundStart.getHour(), soundStart.getMinute());
+		ts.setRightTime(soundStart.getHour(), soundStart.getMinute());
 
 		cb = (CheckBox) findViewById(R.id.checkBoxMondays);
 		cb.setChecked(pref.getBoolean("mondays", true));
@@ -125,9 +127,6 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		cb = (CheckBox) findViewById(R.id.checkBoxSundays);
 		cb.setChecked(pref.getBoolean("sundays", false));
 
-		TextView tv = (TextView) findViewById(R.id.editTextMinutes);
-		tv.setText(String.format("%d",pref.getInt("duration", 15)));
-
 		updateColor(pref.getInt("color", 0x4040FF));
 
 		String sound = pref.getString("sound", "");
@@ -139,9 +138,6 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		{
 			m_soundUri = Uri.parse(sound);
 		}
-
-		tv = (TextView) findViewById(R.id.editTextSoundDelay);
-		tv.setText(String.format("%d",pref.getInt("sound_delay", 15)));
 
 		AudioManager am = (AudioManager)getSystemService(AUDIO_SERVICE);
 		int maxVolume = am.getStreamMaxVolume(AudioManager.STREAM_ALARM);
@@ -176,10 +172,10 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		TimeSlider soundSlider = (TimeSlider)findViewById(R.id.timeSlider2);
 		int minTime = Math.min(
 				lightSlider.getLeftTime().getMinutes(),
-				soundSlider.getLeftTime().getMinutes());
+				soundSlider.getLeftTime().getMinutes()) - 10;
 		int maxTime = Math.max(
 				lightSlider.getRightTime().getMinutes(),
-				soundSlider.getRightTime().getMinutes());
+				soundSlider.getRightTime().getMinutes()) + 10;
 		DawnTime start = new DawnTime(minTime);
 
 		lightSlider.setStartTime(start.getHour(), start.getMinute());
@@ -192,11 +188,6 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 	private void updateColor(int color)
 	{
 		m_dawnColor = color & COLOR_RGB_MASK;
-		Button colorButton = (Button) findViewById(R.id.buttonColor);
-		colorButton.getBackground().setColorFilter(
-				m_dawnColor|COLOR_OPAQUE,
-				PorterDuff.Mode.SRC);
-		
 		TimeSlider ts = (TimeSlider)findViewById(R.id.timeSlider1);
 		ts.setRectColor(m_dawnColor|COLOR_OPAQUE);
 	}
@@ -211,11 +202,11 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		case R.id.buttonSave:
 			SharedPreferences pref = getApplicationContext().getSharedPreferences("main", MODE_PRIVATE);
 			SharedPreferences.Editor editor = pref.edit();
+			TimeSlider lightSlider = (TimeSlider)findViewById(R.id.timeSlider1);
+			TimeSlider soundSlider = (TimeSlider)findViewById(R.id.timeSlider2);
 
-			TimePicker tp = (TimePicker) findViewById(R.id.timePicker1);
-			tp.clearFocus();
-			editor.putInt("hour", tp.getCurrentHour());
-			editor.putInt("minute", tp.getCurrentMinute());
+			editor.putInt("hour", lightSlider.getLeftTime().getHourOfDay());
+			editor.putInt("minute", lightSlider.getLeftTime().getMinute());
 
 			editor.putInt("color", m_dawnColor);
 			
@@ -239,8 +230,8 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 			cb = (CheckBox) findViewById(R.id.checkBoxSundays);
 			editor.putBoolean("sundays", cb.isChecked());
 
-			TextView tv = (TextView) findViewById(R.id.editTextMinutes);
-			editor.putInt("duration", Integer.parseInt(tv.getText().toString()));
+			editor.putInt("duration",
+					lightSlider.getRightTime().getMinutes() - lightSlider.getLeftTime().getMinutes());
 			if(m_soundUri == null)
 			{
 				editor.putString("sound", "");
@@ -250,8 +241,8 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 				editor.putString("sound", m_soundUri.toString());
 			}
 
-			tv = (TextView) findViewById(R.id.editTextSoundDelay);
-			editor.putInt("sound_delay", Integer.parseInt(tv.getText().toString()));
+			editor.putInt("sound_delay",
+					soundSlider.getLeftTime().getMinutes() - lightSlider.getRightTime().getMinutes());
 			
 			SeekBar sb = (SeekBar)findViewById(R.id.seekBarVolume);
 			editor.putInt("volume", sb.getProgress());
@@ -290,10 +281,6 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 						m_soundUri);
 			}
 			startActivityForResult(pickSound, REQUEST_PICK_SOUND);
-			break;
-		case R.id.buttonColor:
-			colorDialog = new ColorPickerDialog(this, this, m_dawnColor);
-			colorDialog.show();
 			break;
 		case R.id.timeSlider1:
 			ts = (TimeSlider)v;
@@ -361,7 +348,6 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		Button soundButton = (Button) findViewById(R.id.buttonSound);
 		SeekBar seekBarVolume = (SeekBar)findViewById(R.id.seekBarVolume);
 		CheckBox checkBoxVibrate = (CheckBox) findViewById(R.id.checkBoxVibrate);
-		TextView textViewSoundDelay = (TextView) findViewById(R.id.editTextSoundDelay);
 		
 		boolean soundViewsEnabled = (m_soundUri != null);
 		
@@ -376,7 +362,6 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		}
 		seekBarVolume.setEnabled(soundViewsEnabled);
 		checkBoxVibrate.setEnabled(soundViewsEnabled);
-		textViewSoundDelay.setEnabled(soundViewsEnabled);
 		
 		m_preview.setSoundUri(this, m_soundUri);
 	}

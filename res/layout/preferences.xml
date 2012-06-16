@@ -29,7 +29,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:text="Dawn Start Time"
+                android:text="Dawn Time"
                 android:textAppearance="?android:attr/textAppearanceMedium" />
 
             <org.balau.fakedawn.TimeSlider
@@ -37,40 +37,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
+            <TextView
+                android:id="@+id/textView6"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="Sound Time"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
             <org.balau.fakedawn.TimeSlider
                 android:id="@+id/timeSlider2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
-
-            <TimePicker
-                android:id="@+id/timePicker1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal" />
-
-            <TextView
-                android:id="@+id/textView2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="Dawn Duration (minutes)"
-                android:textAppearance="?android:attr/textAppearanceMedium" />
-
-            <EditText
-                android:id="@+id/editTextMinutes"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:ems="10"
-                android:hint="Duration in minutes"
-                android:inputType="number"
-                android:text="30" />
-
-            <Button
-                android:id="@+id/buttonColor"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Dawn Color" />
 
             <TextView
                 android:id="@+id/textView3"
@@ -85,23 +63,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Silent" />
-
-            <TextView
-                android:id="@+id/textView6"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="Sound Delay (minutes)"
-                android:textAppearance="?android:attr/textAppearanceMedium" />
-
-            <EditText
-                android:id="@+id/editTextSoundDelay"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:ems="10"
-                android:inputType="number"
-                android:text="30" />
 
             <TextView
                 android:id="@+id/textView4"
