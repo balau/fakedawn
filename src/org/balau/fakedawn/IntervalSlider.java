@@ -520,29 +520,29 @@ public class IntervalSlider extends View {
 	/* (non-Javadoc)
 	 * @see android.view.View#onRestoreInstanceState(android.os.Parcelable)
 	 */
-	 @Override
-	 protected void onRestoreInstanceState(Parcelable state) {
-		 if (!state.getClass().equals(SavedState.class)) {
-			 // Didn't save state for us in onSaveInstanceState
-			 super.onRestoreInstanceState(state);
-			 return;
-		 }
+	@Override
+	protected void onRestoreInstanceState(Parcelable state) {
+		if (!state.getClass().equals(SavedState.class)) {
+			// Didn't save state for us in onSaveInstanceState
+			super.onRestoreInstanceState(state);
+			return;
+		}
 
-		 SavedState s = (SavedState) state;
-		 super.onRestoreInstanceState(s.getSuperState());
-		 setRightPos(s.rightPos);
-		 setLeftPos(s.leftPos);
-	 }
+		SavedState s = (SavedState) state;
+		super.onRestoreInstanceState(s.getSuperState());
+		setRightPos(s.rightPos);
+		setLeftPos(s.leftPos);
+	}
 
-	 /* (non-Javadoc)
-	  * @see android.view.View#onSaveInstanceState()
-	  */
-	 @Override
-	 protected Parcelable onSaveInstanceState() {
-		 Parcelable p = super.onSaveInstanceState(); 
-		 SavedState s = new SavedState(p);
-		 s.leftPos = getLeftPos();
-		 s.rightPos = getRightPos();
-		 return s;
-	 }    
+	/* (non-Javadoc)
+	 * @see android.view.View#onSaveInstanceState()
+	 */
+	@Override
+	protected Parcelable onSaveInstanceState() {
+		Parcelable p = super.onSaveInstanceState(); 
+		SavedState s = new SavedState(p);
+		s.leftPos = getLeftPos();
+		s.rightPos = getRightPos();
+		return s;
+	}
 }
