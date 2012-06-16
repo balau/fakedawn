@@ -23,6 +23,8 @@ import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.Shader;
 import android.graphics.SweepGradient;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.view.View;
 
@@ -79,17 +81,44 @@ public class TimeSlider extends IntervalSlider {
 		updateView();
 	}
 
+	public DawnTime getStartTime()
+	{
+		return new DawnTime(m_startTime.getMinutes());
+	}
+	
+	public int getSpanTime()
+	{
+		return m_spanMinutes;
+	}
+	
+	private void reposCursors(int leftMinutes, int rightMinutes)
+	{
+		setRightPos(1.0F);
+		setLeftPos(0.0F);
+		
+		DawnTime leftTime = new DawnTime(leftMinutes);
+		setLeftTime(leftTime.getHour(), leftTime.getMinute());
+		
+		DawnTime rightTime = new DawnTime(rightMinutes);
+		setRightTime(rightTime.getHour(), rightTime.getMinute());
+	}
+	
 	public int setStartTime(int hour, int minute)
 	{
+		int rightMinutes = getRightTime().getMinutes();
+		int leftMinutes = getLeftTime().getMinutes();
+
 		int minutes = minute + hour*60;
-		int minMinutes = getLeftTime().getMinutes();
+		int minMinutes = leftMinutes;
 		if(minutes < minMinutes)
 			minutes = minMinutes;
 		m_startTime = new DawnTime(minutes);
 
-		int minSpan = getRightTime().getMinutes() - minutes;
+		int minSpan = rightMinutes - minutes;
 		if(m_spanMinutes < minSpan)
 			m_spanMinutes = minSpan;
+		
+		reposCursors(leftMinutes, rightMinutes);
 
 		updateView();
 
@@ -98,14 +127,18 @@ public class TimeSlider extends IntervalSlider {
 
 	public int setSpanTime(int minutes)
 	{
-		int minSpan = getRightTime().getMinutes() - getLeftTime().getMinutes();
+		int rightMinutes = getRightTime().getMinutes();
+		int leftMinutes = getLeftTime().getMinutes();
+		int minSpan = rightMinutes - leftMinutes;
 		if(minutes < minSpan)
 			minutes = minSpan;
 		m_spanMinutes = minutes;
 
-		int minStart = getRightTime().getMinutes() - minutes;
+		int minStart = rightMinutes - minutes;
 		if(m_startTime.getMinutes() < minStart)
 			m_startTime = new DawnTime(minStart);
+
+		reposCursors(leftMinutes, rightMinutes);
 
 		updateView();
 
@@ -200,7 +233,7 @@ public class TimeSlider extends IntervalSlider {
 		updateView();
 	}
 
-	private class DawnTime
+	public class DawnTime
 	{
 		public DawnTime(int hour, int minute)
 		{
@@ -242,5 +275,66 @@ public class TimeSlider extends IntervalSlider {
 		{
 			return String.format("%02d:%02d", getHourOfDay(), getMinute());
 		}
+	}
+
+	private static class SavedState extends BaseSavedState {
+		int startTimeMinutes;
+		int spanTime;
+		int color;
+
+		public SavedState(Parcel source) {
+			super(source);
+			
+			color = source.readInt();
+			spanTime = source.readInt();
+			startTimeMinutes = source.readInt();
+		}
+
+		@Override
+		public void writeToParcel(Parcel dest, int flags) {
+			super.writeToParcel(dest, flags);
+
+			dest.writeInt(startTimeMinutes);
+			dest.writeInt(spanTime);
+			dest.writeInt(color);
+		}
+
+		public SavedState(Parcelable superState) {
+			super(superState);
+		}
+
+	}
+
+	/* (non-Javadoc)
+	 * @see android.view.View#onRestoreInstanceState(android.os.Parcelable)
+	 */
+	@Override
+	protected void onRestoreInstanceState(Parcelable state) {
+		if (!state.getClass().equals(SavedState.class)) {
+			// Didn't save state for us in onSaveInstanceState
+			super.onRestoreInstanceState(state);
+			return;
+		}
+
+		SavedState s = (SavedState) state;
+		super.onRestoreInstanceState(s.getSuperState());
+		DawnTime t = new DawnTime(s.startTimeMinutes);
+		m_spanMinutes = s.spanTime;
+		m_startTime = new DawnTime(s.startTimeMinutes);
+		m_color = s.color;
+		updateView();
+	}
+
+	/* (non-Javadoc)
+	 * @see android.view.View#onSaveInstanceState()
+	 */
+	@Override
+	protected Parcelable onSaveInstanceState() {
+		Parcelable p = super.onSaveInstanceState(); 
+		SavedState s = new SavedState(p);
+		s.spanTime = m_spanMinutes;
+		s.startTimeMinutes = m_startTime.getMinutes();
+		s.color = m_color;
+		return s;
 	}
 }
