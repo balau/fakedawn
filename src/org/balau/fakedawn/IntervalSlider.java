@@ -28,6 +28,7 @@ import android.view.GestureDetector.OnGestureListener;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.ScaleGestureDetector.OnScaleGestureListener;
+import android.view.View.MeasureSpec;
 import android.view.View;
 
 /**
@@ -52,7 +53,7 @@ public class IntervalSlider extends View {
 	private String m_textRight = "";
 
 	private Paint m_rectPaint;
-	
+
 	private void ConstructDetectors(Context context)
 	{
 		m_rectPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -89,12 +90,77 @@ public class IntervalSlider extends View {
 		ConstructDetectors(context);
 	}
 
-	/* (non-Javadoc)
-	 * @see android.view.View#onMeasure(int, int)
+	/**
+	 * @see android.view.View#measure(int, int)
 	 */
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+		setMeasuredDimension(measureWidth(widthMeasureSpec),
+				measureHeight(heightMeasureSpec));
+	}
+
+	/* (non-Javadoc)
+	 * @see android.view.View#getSuggestedMinimumHeight()
+	 */
+	@Override
+	protected int getSuggestedMinimumHeight() {
+		return Math.max(
+				super.getSuggestedMinimumHeight(),
+				300);
+	}
+
+	/* (non-Javadoc)
+	 * @see android.view.View#getSuggestedMinimumWidth()
+	 */
+	@Override
+	protected int getSuggestedMinimumWidth() {
+		return Math.max(
+				super.getSuggestedMinimumWidth(),
+				300);
+	}
+
+	/**
+	 * Determines the width of this view
+	 * @param measureSpec A measureSpec packed into an int
+	 * @return The width of the view, honoring constraints from measureSpec
+	 */
+	private int measureWidth(int measureSpec) {
+		int result = 0;
+		int specMode = MeasureSpec.getMode(measureSpec);
+		int specSize = MeasureSpec.getSize(measureSpec);
+
+		if (specMode == MeasureSpec.EXACTLY) {
+			result = specSize;
+		} else {
+			result = getSuggestedMinimumWidth();
+			if (specMode == MeasureSpec.AT_MOST) {
+				// Respect AT_MOST value if that was what is called for by measureSpec
+				result = Math.min(result, specSize);
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Determines the height of this view
+	 * @param measureSpec A measureSpec packed into an int
+	 * @return The height of the view, honoring constraints from measureSpec
+	 */
+	private int measureHeight(int measureSpec) {
+		int result = 0;
+		int specMode = MeasureSpec.getMode(measureSpec);
+		int specSize = MeasureSpec.getSize(measureSpec);
+
+		if (specMode == MeasureSpec.EXACTLY) {
+			result = specSize;
+		} else {
+			result = getSuggestedMinimumHeight();
+			if (specMode == MeasureSpec.AT_MOST) {
+				// Respect AT_MOST value if that was what is called for by measureSpec
+				result = Math.min(result, specSize);
+			}
+		}
+		return result;
 	}
 
 	public void setRightPos(float p)
@@ -164,7 +230,25 @@ public class IntervalSlider extends View {
 		m_rectPaint = p;
 		this.invalidate();
 	}
-	
+
+	private int getCursorZoneHeight(int measuredHeight)
+	{
+		int cursorZoneMinHeight = 100; 
+		int rectMinHeight = 25;
+		int cursorZoneHeight;
+
+		if((measuredHeight < (cursorZoneMinHeight+rectMinHeight)) ||
+				(measuredHeight/4 > cursorZoneMinHeight))
+		{
+			cursorZoneHeight = measuredHeight/4;
+		}
+		else
+		{
+			cursorZoneHeight = cursorZoneMinHeight;
+		}
+		return cursorZoneHeight;
+	}
+
 	/* (non-Javadoc)
 	 * @see android.view.View#onDraw(android.graphics.Canvas)
 	 */
@@ -173,53 +257,58 @@ public class IntervalSlider extends View {
 		int w, h;
 		w = getMeasuredWidth();
 		h = getMeasuredHeight();
+		int cursorZoneHeight = getCursorZoneHeight(h);
+		int cursorRadius;
+		int rectHeight;
 
-		Rect r = new Rect(0, 0, w, (3*h)/4);
+		rectHeight = h - cursorZoneHeight;
+		cursorRadius = cursorZoneHeight/4;
+		Rect r = new Rect(0, 0, w, rectHeight);
 		canvas.drawRect(r, m_rectPaint);
 
 		Paint cursorPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 		cursorPaint.setStrokeWidth(5);
 		cursorPaint.setColor(0xFFFFFFFF);
-		int leftCursorEnd = (13*h)/16;
-		int rightCursorEnd = (15*h)/16;
+		int leftCursorEnd = rectHeight + (cursorZoneHeight/4);
+		int rightCursorEnd = rectHeight + ((3*cursorZoneHeight)/4);
 		canvas.drawLine(w*m_leftCursorPos, 0, w*m_leftCursorPos, leftCursorEnd, cursorPaint);
-		canvas.drawCircle(w*m_leftCursorPos, leftCursorEnd, h/16, cursorPaint);
+		canvas.drawCircle(w*m_leftCursorPos, leftCursorEnd, cursorRadius, cursorPaint);
 		canvas.drawLine(w*m_rightCursorPos, 0, w*m_rightCursorPos, rightCursorEnd, cursorPaint);
-		canvas.drawCircle(w*m_rightCursorPos, rightCursorEnd, h/16, cursorPaint);
+		canvas.drawCircle(w*m_rightCursorPos, rightCursorEnd, cursorRadius, cursorPaint);
 
 		Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 		textPaint.setColor(0xFFFFFFFF);
-		textPaint.setTextSize(h/10);
+		textPaint.setTextSize(cursorZoneHeight/2);
 		Rect bounds = new Rect();
 
 		textPaint.getTextBounds(m_textLeft, 0, m_textLeft.length(), bounds);
-		if(w*m_leftCursorPos-h/16-bounds.width() > 0)
+		if(w*m_leftCursorPos-cursorRadius-bounds.width() > 0)
 		{
 			canvas.drawText(m_textLeft, 
-					w*m_leftCursorPos-h/16-bounds.right,
+					w*m_leftCursorPos-cursorRadius-bounds.right,
 					leftCursorEnd-bounds.exactCenterY(),
 					textPaint);
 		}
 		else
 		{
 			canvas.drawText(m_textLeft, 
-					w*m_leftCursorPos+h/16-bounds.left,
+					w*m_leftCursorPos+cursorRadius-bounds.left,
 					leftCursorEnd-bounds.exactCenterY(),
 					textPaint);
 		}
 
 		textPaint.getTextBounds(m_textRight, 0, m_textRight.length(), bounds);
-		if(w*m_rightCursorPos+h/16+bounds.width() > canvas.getWidth())
+		if(w*m_rightCursorPos+cursorRadius+bounds.width() > canvas.getWidth())
 		{
 			canvas.drawText(m_textRight, 
-					w*m_rightCursorPos-h/16-bounds.right,
+					w*m_rightCursorPos-cursorRadius-bounds.right,
 					rightCursorEnd-bounds.exactCenterY(),
 					textPaint);
 		}
 		else
 		{
 			canvas.drawText(m_textRight, 
-					w*m_rightCursorPos+h/16-bounds.left,
+					w*m_rightCursorPos+cursorRadius-bounds.left,
 					rightCursorEnd-bounds.exactCenterY(),
 					textPaint);
 		}
@@ -238,9 +327,9 @@ public class IntervalSlider extends View {
 		return managed;
 	}
 
-	
+
 	private OnClickListener m_clickListener = null;
-	
+
 	/* (non-Javadoc)
 	 * @see android.view.View#setOnClickListener(android.view.View.OnClickListener)
 	 */
@@ -260,14 +349,14 @@ public class IntervalSlider extends View {
 	public interface OnCursorsMovedListener {
 		void onCursorsMoved(IntervalSlider i, float leftMovement, float rightMovement);
 	}
-	
+
 	private OnCursorsMovedListener m_cursorsMovedListener = null;
-	
+
 	public void setOnCursorsMovedListener(OnCursorsMovedListener l)
 	{
 		m_cursorsMovedListener = l;
 	}
-	
+
 	private void cursorsMoved(float left, float right)
 	{
 		if(m_cursorsMovedListener != null)
@@ -275,12 +364,12 @@ public class IntervalSlider extends View {
 			m_cursorsMovedListener.onCursorsMoved(this, left, right);
 		}
 	}
-	
+
 	public int getLastTouched()
 	{
 		return m_touchedPart;
 	}
-	
+
 	private class GestureListener implements OnScaleGestureListener, OnGestureListener
 	{
 		private float m_rightCursorPosBeforeMotionEvent;
@@ -324,9 +413,14 @@ public class IntervalSlider extends View {
 		{
 			int w = getMeasuredWidth();
 			int h = getMeasuredHeight();
+			int cursorZoneHeight = getCursorZoneHeight(h);
+			int rectHeight = h - cursorZoneHeight;
 
-			float distanceLeft = getDistance(x,y,w*m_leftCursorPos,(13*h)/16);
-			float distanceRight = getDistance(x,y,w*m_rightCursorPos,(15*h)/16);
+			int leftCursorEnd = rectHeight + (cursorZoneHeight/4);
+			int rightCursorEnd = rectHeight + ((3*cursorZoneHeight)/4);
+
+			float distanceLeft = getDistance(x,y,w*m_leftCursorPos, leftCursorEnd);
+			float distanceRight = getDistance(x,y,w*m_rightCursorPos, rightCursorEnd);
 			if(distanceLeft < h/8 && distanceLeft <= distanceRight)
 			{
 				return TOUCH_LEFT;			
