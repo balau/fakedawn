@@ -26,6 +26,7 @@ import android.graphics.SweepGradient;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 /**
@@ -110,7 +111,7 @@ public class TimeSlider extends IntervalSlider {
 
 		int minutes = minute + hour*60;
 		int minMinutes = leftMinutes;
-		if(minutes < minMinutes)
+		if(minutes > minMinutes)
 			minutes = minMinutes;
 		m_startTime = new DawnTime(minutes);
 
@@ -134,8 +135,8 @@ public class TimeSlider extends IntervalSlider {
 			minutes = minSpan;
 		m_spanMinutes = minutes;
 
-		int minStart = rightMinutes - minutes;
-		if(m_startTime.getMinutes() < minStart)
+		int minStart = leftMinutes;
+		if(m_startTime.getMinutes() > minStart)
 			m_startTime = new DawnTime(minStart);
 
 		reposCursors(leftMinutes, rightMinutes);
@@ -233,7 +234,7 @@ public class TimeSlider extends IntervalSlider {
 		updateView();
 	}
 
-	public class DawnTime
+	public static class DawnTime
 	{
 		public DawnTime(int hour, int minute)
 		{

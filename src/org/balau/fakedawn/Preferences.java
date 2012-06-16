@@ -22,6 +22,7 @@ package org.balau.fakedawn;
 import java.io.IOException;
 
 import org.balau.fakedawn.ColorPickerDialog.OnColorChangedListener;
+import org.balau.fakedawn.TimeSlider.DawnTime;
 
 import android.app.Activity;
 import android.app.TimePickerDialog;
@@ -54,13 +55,19 @@ import android.widget.TimePicker;
  */
 public class Preferences extends Activity implements OnClickListener, OnSeekBarChangeListener, OnColorChangedListener, OnTimeSetListener {
 
-	private static int REQUEST_PICK_SOUND = 0;
-	private static int COLOR_OPAQUE = 0xFF000000;
-	private static int COLOR_RGB_MASK = 0x00FFFFFF;
+	private static final int REQUEST_PICK_SOUND = 0;
+	private static final int COLOR_OPAQUE = 0xFF000000;
+	private static final int COLOR_RGB_MASK = 0x00FFFFFF;
 
+	private static final int TIME_DAWN_START = 0;
+	private static final int TIME_DAWN_END = 1;
+	private static final int TIME_SOUND_START = 2;
+	private static final int TIME_SOUND_END = 3;
+	
 	private Uri m_soundUri = null;
 	private VolumePreview m_preview = new VolumePreview();
 	private int m_dawnColor;
+	private int m_clickedTime;
 	
 	/* (non-Javadoc)
 	 * @see android.app.Activity#onCreate(android.os.Bundle)
@@ -88,6 +95,8 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		seekBarVolume.setOnSeekBarChangeListener(this);
 
 		TimeSlider ts = (TimeSlider)findViewById(R.id.timeSlider1);
+		ts.setOnClickListener(this);
+		ts = (TimeSlider)findViewById(R.id.timeSlider2);
 		ts.setOnClickListener(this);
 		
 		SharedPreferences pref = getApplicationContext().getSharedPreferences("main", MODE_PRIVATE);
@@ -147,6 +156,8 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 
 		updateSoundViews();
 
+		updateTimes();
+
 		Log.d("FakeDawn", "Preferences loaded.");
 	}
 
@@ -159,6 +170,25 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 
 	}
 
+	private void updateTimes()
+	{
+		TimeSlider lightSlider = (TimeSlider)findViewById(R.id.timeSlider1);
+		TimeSlider soundSlider = (TimeSlider)findViewById(R.id.timeSlider2);
+		int minTime = Math.min(
+				lightSlider.getLeftTime().getMinutes(),
+				soundSlider.getLeftTime().getMinutes());
+		int maxTime = Math.max(
+				lightSlider.getRightTime().getMinutes(),
+				soundSlider.getRightTime().getMinutes());
+		DawnTime start = new DawnTime(minTime);
+
+		lightSlider.setStartTime(start.getHour(), start.getMinute());
+		lightSlider.setSpanTime(maxTime - minTime);
+
+		soundSlider.setStartTime(start.getHour(), start.getMinute());
+		soundSlider.setSpanTime(maxTime - minTime);
+	}
+	
 	private void updateColor(int color)
 	{
 		m_dawnColor = color & COLOR_RGB_MASK;
@@ -173,6 +203,9 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 	
 	public void onClick(View v) {
 		ColorPickerDialog colorDialog;
+		TimeSlider ts;
+		TimePickerDialog tpd;
+		
 		switch(v.getId())
 		{
 		case R.id.buttonSave:
@@ -263,8 +296,7 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 			colorDialog.show();
 			break;
 		case R.id.timeSlider1:
-			TimeSlider ts = (TimeSlider)v;
-			TimePickerDialog tpd;
+			ts = (TimeSlider)v;
 			switch(ts.getLastTouched())
 			{
 			case TimeSlider.TOUCH_ALL:
@@ -278,6 +310,7 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 						ts.getLeftTime().getHourOfDay(),
 						ts.getLeftTime().getMinute(),
 						true);
+				m_clickedTime = TIME_DAWN_START;
 				tpd.show();
 				break;
 			case TimeSlider.TOUCH_RIGHT:
@@ -287,9 +320,39 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 						ts.getRightTime().getHourOfDay(),
 						ts.getRightTime().getMinute(),
 						true);
+				m_clickedTime = TIME_DAWN_END;
 				tpd.show();
 				break;
 			}
+			break;
+		case R.id.timeSlider2:
+			ts = (TimeSlider)v;
+			switch(ts.getLastTouched())
+			{
+			case TimeSlider.TOUCH_ALL:
+				break;
+			case TimeSlider.TOUCH_LEFT:
+				tpd = new TimePickerDialog(
+						this, 
+						this, 
+						ts.getLeftTime().getHourOfDay(),
+						ts.getLeftTime().getMinute(),
+						true);
+				m_clickedTime = TIME_SOUND_START;
+				tpd.show();
+				break;
+			case TimeSlider.TOUCH_RIGHT:
+				tpd = new TimePickerDialog(
+						this, 
+						this, 
+						ts.getRightTime().getHourOfDay(),
+						ts.getRightTime().getMinute(),
+						true);
+				m_clickedTime = TIME_SOUND_END;
+				tpd.show();
+				break;
+			}
+			break;
 		}
 	}
 
@@ -449,17 +512,24 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 
 	@Override
 	public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-		TimeSlider ts = (TimeSlider)findViewById(R.id.timeSlider1);
-		switch(ts.getLastTouched())
+		TimeSlider lightSlider = (TimeSlider)findViewById(R.id.timeSlider1);
+		TimeSlider soundSlider = (TimeSlider)findViewById(R.id.timeSlider2);
+		
+		switch(m_clickedTime)
 		{
-		case TimeSlider.TOUCH_ALL:
+		case TIME_DAWN_START:
+			lightSlider.setLeftTime(hourOfDay, minute);
 			break;
-		case TimeSlider.TOUCH_LEFT:
-			ts.setLeftTime(hourOfDay, minute);
+		case TIME_DAWN_END:
+			lightSlider.setRightTime(hourOfDay, minute);
 			break;
-		case TimeSlider.TOUCH_RIGHT:
-			ts.setRightTime(hourOfDay, minute);
+		case TIME_SOUND_START:
+			soundSlider.setLeftTime(hourOfDay, minute);
+			break;
+		case TIME_SOUND_END:
+			soundSlider.setRightTime(hourOfDay, minute);
 			break;
 		}
+		updateTimes();
 	}
 }

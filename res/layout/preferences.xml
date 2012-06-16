@@ -37,6 +37,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
+            <org.balau.fakedawn.TimeSlider
+                android:id="@+id/timeSlider2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
             <TimePicker
                 android:id="@+id/timePicker1"
                 android:layout_width="wrap_content"
