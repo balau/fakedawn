@@ -360,7 +360,8 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		Button soundButton = (Button) findViewById(R.id.buttonSound);
 		SeekBar seekBarVolume = (SeekBar)findViewById(R.id.seekBarVolume);
 		CheckBox checkBoxVibrate = (CheckBox) findViewById(R.id.checkBoxVibrate);
-		
+		TimeSlider soundSlider = (TimeSlider)findViewById(R.id.timeSlider2);
+
 		boolean soundViewsEnabled = (m_soundUri != null);
 		
 		if(soundViewsEnabled)
@@ -374,6 +375,7 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		}
 		seekBarVolume.setEnabled(soundViewsEnabled);
 		checkBoxVibrate.setEnabled(soundViewsEnabled);
+		soundSlider.setEnabled(soundViewsEnabled);
 		
 		m_preview.setSoundUri(this, m_soundUri);
 	}

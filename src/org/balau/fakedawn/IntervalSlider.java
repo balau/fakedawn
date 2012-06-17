@@ -20,6 +20,7 @@ package org.balau.fakedawn;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.Parcel;
@@ -57,7 +58,7 @@ public class IntervalSlider extends View {
 
 	private Paint m_rectPaint;
 
-	private void ConstructDetectors(Context context)
+	private void initialize(Context context)
 	{
 		m_rectPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 		m_rectPaint.setColor(0xFF0000FF);
@@ -76,7 +77,7 @@ public class IntervalSlider extends View {
 	 */
 	public IntervalSlider(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
-		ConstructDetectors(context);
+		initialize(context);
 	}
 
 	/**
@@ -85,12 +86,12 @@ public class IntervalSlider extends View {
 	 */
 	public IntervalSlider(Context context, AttributeSet attrs) {
 		super(context, attrs);
-		ConstructDetectors(context);
+		initialize(context);
 	}
 
 	public IntervalSlider(Context context) {
 		super(context);
-		ConstructDetectors(context);
+		initialize(context);
 	}
 
 	/**
@@ -315,6 +316,14 @@ public class IntervalSlider extends View {
 		canvas.drawText(m_textRight, xText, yText, textPaint);
 		bounds.offset((int)Math.round(xText), (int)Math.round(yText));
 		m_textRightBounds = new Rect(bounds);
+		
+		if(!isEnabled())
+		{
+			Paint opaquePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+			opaquePaint.setColor(0);
+			opaquePaint.setAlpha(0x80);
+			canvas.drawPaint(opaquePaint);
+		}
 
 		super.onDraw(canvas);
 	}
@@ -325,8 +334,11 @@ public class IntervalSlider extends View {
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		boolean managed = false;
-		managed = managed || m_gestureDetector.onTouchEvent(event);
-		managed = managed || m_pinchDetector.onTouchEvent(event);
+		if(isEnabled())
+		{
+			managed = managed || m_gestureDetector.onTouchEvent(event);
+			managed = managed || m_pinchDetector.onTouchEvent(event);
+		}
 		return managed;
 	}
 
@@ -555,5 +567,18 @@ public class IntervalSlider extends View {
 		s.leftPos = getLeftPos();
 		s.rightPos = getRightPos();
 		return s;
+	}
+
+	/* (non-Javadoc)
+	 * @see android.view.View#setEnabled(boolean)
+	 */
+	@Override
+	public void setEnabled(boolean enabled) {
+		if(enabled != isEnabled())
+		{
+			invalidate();
+		}
+		
+		super.setEnabled(enabled);
 	}
 }
