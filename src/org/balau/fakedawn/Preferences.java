@@ -72,8 +72,10 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 	private VolumePreview m_preview = new VolumePreview();
 	private int m_dawnColor;
 	private int m_clickedTime;
-	private Timer m_scheduledMoveTimes = null;
-	private static final int SCHEDULED_MOVE_TIMES_MILLIS = 1000;
+	
+	private Timer m_resizeSlidersScheduler = null;
+	private static final int RESIZE_SLIDERS_DELAY_MILLIS = 1000;
+	private static final int SLIDERS_PADDING_MINUTES = 10;
 	
 	/* (non-Javadoc)
 	 * @see android.app.Activity#onCreate(android.os.Bundle)
@@ -161,7 +163,7 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 
 		updateSoundViews();
 
-		moveTimes();
+		resizeSliders();
 
 		Log.d("FakeDawn", "Preferences loaded.");
 	}
@@ -175,16 +177,16 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 
 	}
 
-	private void moveTimes()
+	private void resizeSliders()
 	{
 		TimeSlider lightSlider = (TimeSlider)findViewById(R.id.timeSlider1);
 		TimeSlider soundSlider = (TimeSlider)findViewById(R.id.timeSlider2);
 		int minTime = Math.min(
 				lightSlider.getLeftTime().getMinutes(),
-				soundSlider.getLeftTime().getMinutes()) - 10;
+				soundSlider.getLeftTime().getMinutes()) - SLIDERS_PADDING_MINUTES;
 		int maxTime = Math.max(
 				lightSlider.getRightTime().getMinutes(),
-				soundSlider.getRightTime().getMinutes()) + 10;
+				soundSlider.getRightTime().getMinutes()) + SLIDERS_PADDING_MINUTES;
 		DawnTime start = new DawnTime(minTime);
 
 		lightSlider.setStartTime(start.getHour(), start.getMinute());
@@ -193,29 +195,6 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		soundSlider.setStartTime(start.getHour(), start.getMinute());
 		soundSlider.setSpanTime(maxTime - minTime);
 		
-	}
-	
-	private void updateTimes()
-	{
-		if(m_scheduledMoveTimes != null)
-		{
-			m_scheduledMoveTimes.cancel();
-		}
-		m_scheduledMoveTimes = new Timer();
-		m_scheduledMoveTimes.schedule(
-				new TimerTask() {
-
-					@Override
-					public void run() {
-						runOnUiThread(
-								new Runnable() {
-									public void run() {
-										moveTimes();
-										m_scheduledMoveTimes = null;
-									}
-								});
-					}
-				}, SCHEDULED_MOVE_TIMES_MILLIS);
 	}
 	
 	private void updateColor(int color)
@@ -548,11 +527,28 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 			soundSlider.setRightTime(hourOfDay, minute);
 			break;
 		}
-		moveTimes();
+		resizeSliders();
 	}
 
 	@Override
 	public void onTimesChanged(TimeSlider s) {
-		updateTimes();
-	}
+		if(m_resizeSlidersScheduler != null)
+		{
+			m_resizeSlidersScheduler.cancel();
+		}
+		m_resizeSlidersScheduler = new Timer();
+		m_resizeSlidersScheduler.schedule(
+				new TimerTask() {
+
+					@Override
+					public void run() {
+						runOnUiThread(
+								new Runnable() {
+									public void run() {
+										resizeSliders();
+										m_resizeSlidersScheduler = null;
+									}
+								});
+					}
+				}, RESIZE_SLIDERS_DELAY_MILLIS);	}
 }
