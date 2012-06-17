@@ -20,6 +20,9 @@
 package org.balau.fakedawn;
 
 import java.io.IOException;
+import java.util.Calendar;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.balau.fakedawn.ColorPickerDialog.OnColorChangedListener;
 import org.balau.fakedawn.TimeSlider.DawnTime;
@@ -69,6 +72,8 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 	private VolumePreview m_preview = new VolumePreview();
 	private int m_dawnColor;
 	private int m_clickedTime;
+	private Timer m_scheduledMoveTimes = null;
+	private static final int SCHEDULED_MOVE_TIMES_MILLIS = 1000;
 	
 	/* (non-Javadoc)
 	 * @see android.app.Activity#onCreate(android.os.Bundle)
@@ -156,7 +161,7 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 
 		updateSoundViews();
 
-		updateTimes();
+		moveTimes();
 
 		Log.d("FakeDawn", "Preferences loaded.");
 	}
@@ -170,7 +175,7 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 
 	}
 
-	private void updateTimes()
+	private void moveTimes()
 	{
 		TimeSlider lightSlider = (TimeSlider)findViewById(R.id.timeSlider1);
 		TimeSlider soundSlider = (TimeSlider)findViewById(R.id.timeSlider2);
@@ -187,6 +192,30 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 
 		soundSlider.setStartTime(start.getHour(), start.getMinute());
 		soundSlider.setSpanTime(maxTime - minTime);
+		
+	}
+	
+	private void updateTimes()
+	{
+		if(m_scheduledMoveTimes != null)
+		{
+			m_scheduledMoveTimes.cancel();
+		}
+		m_scheduledMoveTimes = new Timer();
+		m_scheduledMoveTimes.schedule(
+				new TimerTask() {
+
+					@Override
+					public void run() {
+						runOnUiThread(
+								new Runnable() {
+									public void run() {
+										moveTimes();
+										m_scheduledMoveTimes = null;
+									}
+								});
+					}
+				}, SCHEDULED_MOVE_TIMES_MILLIS);
 	}
 	
 	private void updateColor(int color)
@@ -519,6 +548,7 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 			soundSlider.setRightTime(hourOfDay, minute);
 			break;
 		}
+		moveTimes();
 	}
 
 	@Override
