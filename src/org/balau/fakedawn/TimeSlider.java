@@ -221,10 +221,27 @@ public class TimeSlider extends IntervalSlider {
 					Shader.TileMode.CLAMP);
 			m_paint.setShader(s);
 			setRectPaint(m_paint);
+			
+			if((leftMovement != 0.0F || rightMovement != 0.0F) && 
+					(m_timesChangedListener != null))
+			{
+				m_timesChangedListener.onTimesChanged((TimeSlider) i);
+			}
 		}
 
 	}
 
+	public interface OnTimesChangedListener {
+		void onTimesChanged(TimeSlider s);
+	}
+	
+	private OnTimesChangedListener m_timesChangedListener = null;
+	
+	public void setOnTimesChangedListener(OnTimesChangedListener l)
+	{
+		m_timesChangedListener = l;
+	}
+	
 	/* (non-Javadoc)
 	 * @see com.balau.helloandroid.IntervalSlider#onMeasure(int, int)
 	 */

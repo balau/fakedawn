@@ -23,6 +23,7 @@ import java.io.IOException;
 
 import org.balau.fakedawn.ColorPickerDialog.OnColorChangedListener;
 import org.balau.fakedawn.TimeSlider.DawnTime;
+import org.balau.fakedawn.TimeSlider.OnTimesChangedListener;
 
 import android.app.Activity;
 import android.app.TimePickerDialog;
@@ -53,7 +54,7 @@ import android.widget.TimePicker;
  * @author francesco
  *
  */
-public class Preferences extends Activity implements OnClickListener, OnSeekBarChangeListener, OnColorChangedListener, OnTimeSetListener {
+public class Preferences extends Activity implements OnClickListener, OnSeekBarChangeListener, OnColorChangedListener, OnTimeSetListener, OnTimesChangedListener {
 
 	private static final int REQUEST_PICK_SOUND = 0;
 	private static final int COLOR_OPAQUE = 0xFF000000;
@@ -98,6 +99,8 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 
 		TimeSlider ts = (TimeSlider)findViewById(R.id.timeSlider1);
 		ts.setOnClickListener(this);
+		ts.setOnTimesChangedListener(this);
+		
 		ts.setLeftTime(
 				pref.getInt("hour", 8),
 				pref.getInt("minute", 0));
@@ -107,6 +110,7 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		
 		ts = (TimeSlider)findViewById(R.id.timeSlider2);
 		ts.setOnClickListener(this);
+		ts.setOnTimesChangedListener(this);
 		DawnTime soundStart = new DawnTime( 
 				dawnEnd.getMinutes() + pref.getInt("sound_delay", 15));
 		ts.setLeftTime(soundStart.getHour(), soundStart.getMinute());
@@ -515,6 +519,10 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 			soundSlider.setRightTime(hourOfDay, minute);
 			break;
 		}
+	}
+
+	@Override
+	public void onTimesChanged(TimeSlider s) {
 		updateTimes();
 	}
 }
