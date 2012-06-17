@@ -52,6 +52,8 @@ public class IntervalSlider extends View {
 
 	private String m_textLeft = "";
 	private String m_textRight = "";
+	private Rect m_textLeftBounds = new Rect(0, 0, 0, 0);
+	private Rect m_textRightBounds = new Rect(0, 0, 0, 0);
 
 	private Paint m_rectPaint;
 
@@ -281,38 +283,38 @@ public class IntervalSlider extends View {
 		textPaint.setColor(0xFFFFFFFF);
 		textPaint.setTextSize(cursorZoneHeight/2);
 		Rect bounds = new Rect();
+		float xText;
+		float yText;
 
 		textPaint.getTextBounds(m_textLeft, 0, m_textLeft.length(), bounds);
+		yText = leftCursorEnd-bounds.exactCenterY();
 		if(w*m_leftCursorPos-cursorRadius-bounds.width() > 0)
 		{
-			canvas.drawText(m_textLeft, 
-					w*m_leftCursorPos-cursorRadius-bounds.right,
-					leftCursorEnd-bounds.exactCenterY(),
-					textPaint);
+			xText = w*m_leftCursorPos-cursorRadius-bounds.right;
 		}
 		else
 		{
-			canvas.drawText(m_textLeft, 
-					w*m_leftCursorPos+cursorRadius-bounds.left,
-					leftCursorEnd-bounds.exactCenterY(),
-					textPaint);
+			xText = w*m_leftCursorPos+cursorRadius-bounds.left;
 		}
+		canvas.drawText(m_textLeft, xText, yText, textPaint);
+		bounds.offset((int)Math.round(xText), (int)Math.round(yText));
+		m_textLeftBounds = new Rect(bounds);
 
 		textPaint.getTextBounds(m_textRight, 0, m_textRight.length(), bounds);
+		yText = rightCursorEnd-bounds.exactCenterY();
 		if(w*m_rightCursorPos+cursorRadius+bounds.width() > canvas.getWidth())
 		{
-			canvas.drawText(m_textRight, 
-					w*m_rightCursorPos-cursorRadius-bounds.right,
-					rightCursorEnd-bounds.exactCenterY(),
-					textPaint);
+			xText = w*m_rightCursorPos-cursorRadius-bounds.right;
+			
 		}
 		else
 		{
-			canvas.drawText(m_textRight, 
-					w*m_rightCursorPos+cursorRadius-bounds.left,
-					rightCursorEnd-bounds.exactCenterY(),
-					textPaint);
+			xText = w*m_rightCursorPos+cursorRadius-bounds.left;
+
 		}
+		canvas.drawText(m_textRight, xText, yText, textPaint);
+		bounds.offset((int)Math.round(xText), (int)Math.round(yText));
+		m_textRightBounds = new Rect(bounds);
 
 		super.onDraw(canvas);
 	}
@@ -412,6 +414,15 @@ public class IntervalSlider extends View {
 
 		private int getTouchedPart(float x, float y)
 		{
+			if(m_textLeftBounds.contains((int)Math.round(x), (int)Math.round(y)))
+			{
+				return TOUCH_LEFT;
+			}
+			if(m_textRightBounds.contains((int)Math.round(x), (int)Math.round(y)))
+			{
+				return TOUCH_RIGHT;
+			}
+			
 			int w = getMeasuredWidth();
 			int h = getMeasuredHeight();
 			int cursorZoneHeight = getCursorZoneHeight(h);
