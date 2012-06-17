@@ -181,6 +181,17 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 	{
 		TimeSlider lightSlider = (TimeSlider)findViewById(R.id.timeSlider1);
 		TimeSlider soundSlider = (TimeSlider)findViewById(R.id.timeSlider2);
+		
+		if(!soundSlider.isEnabled())
+		{
+			//If disabled, it follows the end of the light slider.
+			soundSlider.setLeftTime(
+					lightSlider.getRightTime().getHour(),
+					lightSlider.getRightTime().getMinute());
+			soundSlider.setRightTime(
+					lightSlider.getRightTime().getHour(),
+					lightSlider.getRightTime().getMinute());
+		}
 		int minTime = Math.min(
 				lightSlider.getLeftTime().getMinutes(),
 				soundSlider.getLeftTime().getMinutes()) - SLIDERS_PADDING_MINUTES;
