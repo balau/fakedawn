@@ -121,7 +121,9 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		DawnTime soundStart = new DawnTime( 
 				dawnEnd.getMinutes() + pref.getInt("sound_delay", 15));
 		ts.setLeftTime(soundStart.getHour(), soundStart.getMinute());
-		ts.setRightTime(soundStart.getHour(), soundStart.getMinute());
+		DawnTime soundEnd = new DawnTime( 
+				dawnEnd.getMinutes() + pref.getInt("sound_duration", 0));
+		ts.setRightTime(soundEnd.getHour(), soundEnd.getMinute());
 
 		cb = (CheckBox) findViewById(R.id.checkBoxMondays);
 		cb.setChecked(pref.getBoolean("mondays", true));
@@ -298,6 +300,8 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 
 			editor.putInt("sound_delay",
 					soundSlider.getLeftTime().getMinutes() - lightSlider.getRightTime().getMinutes());
+			editor.putInt("sound_duration",
+					soundSlider.getRightTime().getMinutes() - soundSlider.getLeftTime().getMinutes());
 			
 			SeekBar sb = (SeekBar)findViewById(R.id.seekBarVolume);
 			editor.putInt("volume", sb.getProgress());

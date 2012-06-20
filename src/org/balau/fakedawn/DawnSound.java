@@ -42,12 +42,16 @@ import android.util.Log;
 public class DawnSound extends Service implements OnPreparedListener, OnCompletionListener, OnErrorListener {
 
 	public static final String EXTRA_SOUND_URI = "org.balau.fakedawn.DawnSound.EXTRA_SOUND_URI";
-	public static final String EXTRA_SOUND_MILLIS = "org.balau.fakedawn.DawnSound.EXTRA_SOUND_MILLIS";
+	public static final String EXTRA_SOUND_START_MILLIS = "org.balau.fakedawn.DawnSound.EXTRA_SOUND_START_MILLIS";
+	public static final String EXTRA_SOUND_END_MILLIS = "org.balau.fakedawn.DawnSound.EXTRA_SOUND_END_MILLIS";
 	public static final String EXTRA_SOUND_VOLUME = "org.balau.fakedawn.DawnSound.EXTRA_SOUND_VOLUME";
 	public static final String EXTRA_VIBRATE = "org.balau.fakedawn.DawnSound.EXTRA_VIBRATE";
 
+	private static int TIMER_TICK_SECONDS = 10;
+
 	private Timer m_timer = null;
 	private long m_soundStartMillis;
+	private long m_soundEndMillis;
 	private MediaPlayer m_player = new MediaPlayer();
 	private boolean m_soundInitialized = false;
 
@@ -100,7 +104,8 @@ public class DawnSound extends Service implements OnPreparedListener, OnCompleti
 			m_player.setAudioStreamType(AudioManager.STREAM_ALARM);
 			m_player.reset();
 
-			m_soundStartMillis = intent.getLongExtra(EXTRA_SOUND_MILLIS, 0);
+			m_soundStartMillis = intent.getLongExtra(EXTRA_SOUND_START_MILLIS, 0);
+			m_soundEndMillis = intent.getLongExtra(EXTRA_SOUND_END_MILLIS, 0);
 
 			String sound = intent.getStringExtra(EXTRA_SOUND_URI);
 			if(sound.isEmpty())
@@ -168,10 +173,51 @@ public class DawnSound extends Service implements OnPreparedListener, OnCompleti
 		return START_STICKY;
 	}
 
+	private void updateVolume(long currentTimeMillis)
+	{
+		float volume;
+		long millis_from_start;
+		long soundRiseDurationMillis;
+		
+		millis_from_start = currentTimeMillis - m_soundStartMillis;
+		soundRiseDurationMillis = m_soundEndMillis - m_soundStartMillis;
+		if(soundRiseDurationMillis > 0)
+		{
+			volume = Math.max(
+					0.0F,
+					Math.min(
+							1.0F,
+							((float)millis_from_start)/((float)soundRiseDurationMillis))
+					);
+		}
+		else
+		{
+			volume = 1.0F;
+		}
+		m_player.setVolume(volume, volume);
+	}
+	
 	@Override
 	public void onPrepared(MediaPlayer mp) {
 		m_player.setLooping(true);
+		updateVolume(m_soundStartMillis);
 		m_player.start();
+		m_timer = new Timer();
+		m_timer.schedule(
+				new TimerTask() {
+
+					@Override
+					public void run() {
+						if(m_player.isPlaying())
+						{
+							updateVolume(System.currentTimeMillis());
+						}
+						else
+						{
+							m_timer.cancel();
+						}
+					}
+				}, TIMER_TICK_SECONDS*1000, TIMER_TICK_SECONDS*1000);
 	}
 
 	@Override

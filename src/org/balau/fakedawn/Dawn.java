@@ -136,15 +136,18 @@ public class Dawn extends Activity implements OnClickListener {
 
 			m_dawnColor = pref.getInt("color", 0x4040FF);
 			Intent sound = new Intent(getApplicationContext(), DawnSound.class);
-			sound.putExtra(DawnSound.EXTRA_VIBRATE, pref.getBoolean("vibrate", false));			
-			sound.putExtra(DawnSound.EXTRA_SOUND_MILLIS,
-					m_alarmEndMillis + (pref.getInt("sound_delay", 15)*1000*60));
+			sound.putExtra(DawnSound.EXTRA_VIBRATE, pref.getBoolean("vibrate", false));
+			long soundStart = m_alarmEndMillis + (pref.getInt("sound_delay", 15)*1000*60); 
+			sound.putExtra(DawnSound.EXTRA_SOUND_START_MILLIS,
+					soundStart);
+			sound.putExtra(DawnSound.EXTRA_SOUND_END_MILLIS,
+					soundStart + (pref.getInt("sound_duration", 0)*1000*60));
 			sound.putExtra(DawnSound.EXTRA_SOUND_URI, pref.getString("sound", ""));
 			if(pref.contains("volume"))
 				sound.putExtra(DawnSound.EXTRA_SOUND_VOLUME, pref.getInt("volume", 0));			
 			startService(sound);
 
-			updateBrightness();
+			updateBrightness(m_alarmStartMillis);
 
 			m_timer = new Timer();
 			m_timer.schedule(
@@ -155,7 +158,7 @@ public class Dawn extends Activity implements OnClickListener {
 							runOnUiThread(
 									new Runnable() {
 										public void run() {
-											updateBrightness();
+											updateBrightness(System.currentTimeMillis());
 										}
 									});
 						}
@@ -205,19 +208,25 @@ public class Dawn extends Activity implements OnClickListener {
 		return rgb_new;
 	}
 	
-	private void updateBrightness()
+	private void updateBrightness(long currentTimeMillis)
 	{
 		long level_percent;
 		long millis_from_start;
 		long dawnDurationMillis;
 		int rgb;
 
-		millis_from_start = System.currentTimeMillis() - m_alarmStartMillis; 
+		millis_from_start = currentTimeMillis - m_alarmStartMillis; 
 		dawnDurationMillis = m_alarmEndMillis - m_alarmStartMillis; 
-		if(dawnDurationMillis <= 0) dawnDurationMillis = 1;
-		level_percent = (100 * millis_from_start) / dawnDurationMillis;
-		if(level_percent < 0) level_percent = 0;
-		if(level_percent > 100) level_percent = 100;
+		if(dawnDurationMillis > 0)
+		{
+			level_percent = (100 * millis_from_start) / dawnDurationMillis;
+			if(level_percent < 0) level_percent = 0;
+			if(level_percent > 100) level_percent = 100;
+		}
+		else
+		{
+			level_percent = 100;
+		}
 		rgb = COLOR_OPAQUE | getColor(m_dawnColor, (int)level_percent);
 		findViewById(R.id.dawn_background).setBackgroundColor(rgb);
 	}
