@@ -182,22 +182,54 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		TimeSlider lightSlider = (TimeSlider)findViewById(R.id.timeSlider1);
 		TimeSlider soundSlider = (TimeSlider)findViewById(R.id.timeSlider2);
 		
-		if(!soundSlider.isEnabled())
+		DawnTime light_start = lightSlider.getLeftTime();
+		DawnTime light_end = lightSlider.getRightTime();
+		DawnTime sound_start;
+		DawnTime sound_end;
+		
+		if(soundSlider.isEnabled())
+		{
+			sound_start = soundSlider.getLeftTime();
+			sound_end  = soundSlider.getRightTime();
+		}
+		else
 		{
 			//If disabled, it follows the end of the light slider.
-			soundSlider.setLeftTime(
-					lightSlider.getRightTime().getHour(),
-					lightSlider.getRightTime().getMinute());
-			soundSlider.setRightTime(
-					lightSlider.getRightTime().getHour(),
-					lightSlider.getRightTime().getMinute());
+			sound_start = lightSlider.getRightTime();
+			sound_end  = new DawnTime(sound_start.getMinutes());
+			soundSlider.setLeftTime(sound_start.getHour(), sound_start.getMinute());
+			soundSlider.setRightTime(sound_end.getHour(), sound_end.getMinute());
 		}
-		int minTime = Math.min(
-				lightSlider.getLeftTime().getMinutes(),
-				soundSlider.getLeftTime().getMinutes()) - SLIDERS_PADDING_MINUTES;
+		
+		int minTime = Math.max(
+				Math.min(
+						light_start.getMinutes(),
+						sound_start.getMinutes()) - SLIDERS_PADDING_MINUTES,
+						0);
 		int maxTime = Math.max(
-				lightSlider.getRightTime().getMinutes(),
-				soundSlider.getRightTime().getMinutes()) + SLIDERS_PADDING_MINUTES;
+				light_end.getMinutes(),
+				sound_end.getMinutes()) + SLIDERS_PADDING_MINUTES;
+		
+		int minutes_in_day = 60*24;
+		if(minTime + SLIDERS_PADDING_MINUTES >= minutes_in_day)
+		{
+			// shift everything to the day
+			int days = (minTime+SLIDERS_PADDING_MINUTES)/minutes_in_day; //floor
+			int minutes_to_subtract = days*minutes_in_day;
+			
+			minTime = Math.max(minTime - minutes_to_subtract, 0);
+			maxTime -= minutes_to_subtract;
+			light_start = new DawnTime(light_start.getMinutes() - minutes_to_subtract);
+			light_end = new DawnTime(light_end.getMinutes() - minutes_to_subtract);
+			sound_start = new DawnTime(sound_start.getMinutes() - minutes_to_subtract);
+			sound_end = new DawnTime(sound_end.getMinutes() - minutes_to_subtract);
+			
+			lightSlider.setLeftTime(light_start.getHour(), light_start.getMinute());
+			lightSlider.setRightTime(light_end.getHour(), light_end.getMinute());
+			soundSlider.setLeftTime(sound_start.getHour(), sound_start.getMinute());
+			soundSlider.setRightTime(sound_end.getHour(), sound_end.getMinute());
+			
+		}
 		DawnTime start = new DawnTime(minTime);
 
 		lightSlider.setStartTime(start.getHour(), start.getMinute());
