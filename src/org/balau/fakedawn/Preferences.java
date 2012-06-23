@@ -122,7 +122,7 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 				dawnEnd.getMinutes() + pref.getInt("sound_delay", 15));
 		ts.setLeftTime(soundStart.getHour(), soundStart.getMinute());
 		DawnTime soundEnd = new DawnTime( 
-				dawnEnd.getMinutes() + pref.getInt("sound_duration", 0));
+				soundStart.getMinutes() + pref.getInt("sound_duration", 0));
 		ts.setRightTime(soundEnd.getHour(), soundEnd.getMinute());
 
 		cb = (CheckBox) findViewById(R.id.checkBoxMondays);
