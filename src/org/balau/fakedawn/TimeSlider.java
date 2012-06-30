@@ -104,15 +104,15 @@ public class TimeSlider extends IntervalSlider {
 		setRightTime(rightTime.getHour(), rightTime.getMinute());
 	}
 	
-	public int setStartTime(int hour, int minute)
+	public int setStartTime(int minutes)
 	{
 		int rightMinutes = getRightTime().getMinutes();
 		int leftMinutes = getLeftTime().getMinutes();
 
-		int minutes = minute + hour*60;
 		int minMinutes = leftMinutes;
 		if(minutes > minMinutes)
 			minutes = minMinutes;
+		
 		m_startTime = new DawnTime(minutes);
 
 		int minSpan = rightMinutes - minutes;
@@ -124,6 +124,16 @@ public class TimeSlider extends IntervalSlider {
 		updateView();
 
 		return minutes;
+	}
+	
+	public int setStartTime(DawnTime start)
+	{
+		return setStartTime(start.getMinutes());
+	}
+	
+	public int setStartTime(int hour, int minute)
+	{
+		return setStartTime(new DawnTime(hour, minute));
 	}
 
 	public int setSpanTime(int minutes)
@@ -160,10 +170,8 @@ public class TimeSlider extends IntervalSlider {
 				(int)Math.round(m_spanMinutes*getRightPos()));
 	}
 
-	public void setLeftTime(int hour, int minute)
+	public void setLeftTime(int leftMinutes)
 	{
-		DawnTime leftTime = new DawnTime(hour, minute);
-		int leftMinutes = leftTime.getMinutes();
 		DawnTime rightTime = getRightTime();
 		if(rightTime.getMinutes() < leftMinutes)
 			rightTime = new DawnTime(leftMinutes);
@@ -179,11 +187,19 @@ public class TimeSlider extends IntervalSlider {
 				((float)m_spanMinutes));
 		updateView();
 	}
-
-	public void setRightTime(int hour, int minute)
+	
+	public void setLeftTime(DawnTime leftTime)
 	{
-		DawnTime rightTime = new DawnTime(hour, minute);
-		int rightMinutes = rightTime.getMinutes();
+		setLeftTime(leftTime.getMinutes());
+	}
+
+	public void setLeftTime(int hour, int minute)
+	{
+		setLeftTime(new DawnTime(hour, minute));
+	}
+
+	public void setRightTime(int rightMinutes)
+	{
 		DawnTime leftTime = getLeftTime();
 		if(leftTime.getMinutes() > rightMinutes)
 			leftTime = new DawnTime(rightMinutes);
@@ -198,6 +214,16 @@ public class TimeSlider extends IntervalSlider {
 				((float)(rightMinutes-m_startTime.getMinutes())) /
 				((float)m_spanMinutes));
 		updateView();
+	}
+	
+	public void setRightTime(DawnTime rightTime)
+	{
+		setRightTime(rightTime.getMinutes());
+	}
+	
+	public void setRightTime(int hour, int minute)
+	{
+		setRightTime(new DawnTime(hour, minute));
 	}
 
 	private class Listener implements OnClickListener, OnCursorsMovedListener {
@@ -336,7 +362,6 @@ public class TimeSlider extends IntervalSlider {
 
 		SavedState s = (SavedState) state;
 		super.onRestoreInstanceState(s.getSuperState());
-		DawnTime t = new DawnTime(s.startTimeMinutes);
 		m_spanMinutes = s.spanTime;
 		m_startTime = new DawnTime(s.startTimeMinutes);
 		m_color = s.color;
