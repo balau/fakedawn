@@ -109,8 +109,8 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		ts.setOnTimesChangedListener(this);
 		
 		ts.setLeftTime(
-				pref.getInt("hour", 8),
-				pref.getInt("minute", 0));
+				pref.getInt("dawn_start_hour", 8),
+				pref.getInt("dawn_start_minute", 0));
 		DawnTime dawnEnd = new DawnTime( 
 				ts.getLeftTime().getMinutes() + pref.getInt("duration", 15));
 		ts.setRightTime(dawnEnd.getHour(), dawnEnd.getMinute());
@@ -261,9 +261,20 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 			SharedPreferences.Editor editor = pref.edit();
 			TimeSlider lightSlider = (TimeSlider)findViewById(R.id.timeSlider1);
 			TimeSlider soundSlider = (TimeSlider)findViewById(R.id.timeSlider2);
-
-			editor.putInt("hour", lightSlider.getLeftTime().getHourOfDay());
-			editor.putInt("minute", lightSlider.getLeftTime().getMinute());
+			int dawn_start_minutes;
+			boolean oldStyle = true;
+			if(oldStyle || (lightSlider.getLeftTime().getMinutes() < soundSlider.getLeftTime().getMinutes()))
+			{
+				editor.putInt("dawn_start_hour", lightSlider.getLeftTime().getHourOfDay());
+				editor.putInt("dawn_start_minute", lightSlider.getLeftTime().getMinute());
+				dawn_start_minutes = lightSlider.getLeftTime().getMinutes();
+			}
+			else
+			{
+				editor.putInt("dawn_start_hour", soundSlider.getLeftTime().getHourOfDay());
+				editor.putInt("dawn_start_minute", soundSlider.getLeftTime().getMinute());
+				dawn_start_minutes = soundSlider.getLeftTime().getMinutes();
+			}
 
 			editor.putInt("color", m_dawnColor);
 			
@@ -287,6 +298,9 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 			cb = (CheckBox) findViewById(R.id.checkBoxSundays);
 			editor.putBoolean("sundays", cb.isChecked());
 
+			editor.putInt("light_start",lightSlider.getLeftTime().getMinutes() - dawn_start_minutes);
+			editor.putInt("light_max",lightSlider.getRightTime().getMinutes() - dawn_start_minutes);
+			
 			editor.putInt("duration",
 					lightSlider.getRightTime().getMinutes() - lightSlider.getLeftTime().getMinutes());
 			if(m_soundUri == null)
@@ -297,6 +311,8 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 			{
 				editor.putString("sound", m_soundUri.toString());
 			}
+			editor.putInt("sound_start",soundSlider.getLeftTime().getMinutes() - dawn_start_minutes);
+			editor.putInt("sound_max",soundSlider.getRightTime().getMinutes() - dawn_start_minutes);
 
 			editor.putInt("sound_delay",
 					soundSlider.getLeftTime().getMinutes() - lightSlider.getRightTime().getMinutes());

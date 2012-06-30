@@ -62,8 +62,8 @@ public class Alarm extends Service {
 		if(pref.getBoolean("enabled", false))
 		{
 			Calendar nextAlarmTime = Calendar.getInstance();
-			nextAlarmTime.set(Calendar.HOUR_OF_DAY, pref.getInt("hour", 8));
-			nextAlarmTime.set(Calendar.MINUTE, pref.getInt("minute", 0));
+			nextAlarmTime.set(Calendar.HOUR_OF_DAY, pref.getInt("dawn_start_hour", 8));
+			nextAlarmTime.set(Calendar.MINUTE, pref.getInt("dawn_start_minute", 0));
 			nextAlarmTime.set(Calendar.SECOND, 0);
 			if(nextAlarmTime.getTimeInMillis() < System.currentTimeMillis())
 			{
