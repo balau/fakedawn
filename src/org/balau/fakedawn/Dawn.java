@@ -50,8 +50,8 @@ public class Dawn extends Activity implements OnClickListener {
 		Calendar rightNow = Calendar.getInstance();
 		
 		long rightNowMillis = rightNow.getTimeInMillis();
-		int hour = pref.getInt("hour", 8);
-		int minute = pref.getInt("minute", 0);
+		int hour = pref.getInt("dawn_start_hour", 8);
+		int minute = pref.getInt("dawn_start_minute", 0);
 		Calendar alarmStart = (Calendar) rightNow.clone();
 		alarmStart.set(Calendar.HOUR_OF_DAY, hour);
 		alarmStart.set(Calendar.MINUTE, minute);
@@ -124,7 +124,9 @@ public class Dawn extends Activity implements OnClickListener {
 		}
 		else
 		{
-			m_alarmStartMillis = alarmStart.getTimeInMillis();
+			long dawnStartMillis = alarmStart.getTimeInMillis(); 
+			m_alarmStartMillis =
+					dawnStartMillis + (pref.getInt("light_start", 0)*1000*60);
 			if(savedInstanceState != null)
 			{
 				if(savedInstanceState.containsKey(ALARM_START_MILLIS))
@@ -132,16 +134,16 @@ public class Dawn extends Activity implements OnClickListener {
 					m_alarmStartMillis = savedInstanceState.getLong(ALARM_START_MILLIS);
 				}
 			}
-			m_alarmEndMillis = m_alarmStartMillis + (1000*60*pref.getInt("duration", 15));
+			m_alarmEndMillis = dawnStartMillis + (1000*60*pref.getInt("light_max", 15));
 
 			m_dawnColor = pref.getInt("color", 0x4040FF);
 			Intent sound = new Intent(getApplicationContext(), DawnSound.class);
 			sound.putExtra(DawnSound.EXTRA_VIBRATE, pref.getBoolean("vibrate", false));
-			long soundStart = m_alarmEndMillis + (pref.getInt("sound_delay", 15)*1000*60); 
+			long soundStart = dawnStartMillis + (pref.getInt("sound_start", 15)*1000*60); 
 			sound.putExtra(DawnSound.EXTRA_SOUND_START_MILLIS,
 					soundStart);
 			sound.putExtra(DawnSound.EXTRA_SOUND_END_MILLIS,
-					soundStart + (pref.getInt("sound_duration", 0)*1000*60));
+					dawnStartMillis + (pref.getInt("sound_max", 0)*1000*60) - soundStart);
 			sound.putExtra(DawnSound.EXTRA_SOUND_URI, pref.getString("sound", ""));
 			if(pref.contains("volume"))
 				sound.putExtra(DawnSound.EXTRA_SOUND_VOLUME, pref.getInt("volume", 0));			
