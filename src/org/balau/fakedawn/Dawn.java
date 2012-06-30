@@ -147,7 +147,7 @@ public class Dawn extends Activity implements OnClickListener {
 				sound.putExtra(DawnSound.EXTRA_SOUND_VOLUME, pref.getInt("volume", 0));			
 			startService(sound);
 
-			updateBrightness(m_alarmStartMillis);
+			updateBrightness(System.currentTimeMillis());
 
 			m_timer = new Timer();
 			m_timer.schedule(
@@ -225,7 +225,7 @@ public class Dawn extends Activity implements OnClickListener {
 		}
 		else
 		{
-			level_percent = 100;
+			level_percent = (millis_from_start >= 0)?100:0;
 		}
 		rgb = COLOR_OPAQUE | getColor(m_dawnColor, (int)level_percent);
 		findViewById(R.id.dawn_background).setBackgroundColor(rgb);

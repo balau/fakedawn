@@ -192,7 +192,7 @@ public class DawnSound extends Service implements OnPreparedListener, OnCompleti
 		}
 		else
 		{
-			volume = 1.0F;
+			volume = (millis_from_start >= 0)?1.0F:0.0F;
 		}
 		m_player.setVolume(volume, volume);
 	}
@@ -200,7 +200,7 @@ public class DawnSound extends Service implements OnPreparedListener, OnCompleti
 	@Override
 	public void onPrepared(MediaPlayer mp) {
 		m_player.setLooping(true);
-		updateVolume(m_soundStartMillis);
+		updateVolume(System.currentTimeMillis());
 		m_player.start();
 		m_timer = new Timer();
 		m_timer.schedule(
