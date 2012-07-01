@@ -44,11 +44,11 @@ public class Dawn extends Activity implements OnClickListener {
 	private Timer m_timer;
 
 	private int m_dawnColor;
-	
+
 	private Calendar getAlarmStart(SharedPreferences pref)
 	{
 		Calendar rightNow = Calendar.getInstance();
-		
+
 		long rightNowMillis = rightNow.getTimeInMillis();
 		int hour = pref.getInt("dawn_start_hour", 8);
 		int minute = pref.getInt("dawn_start_minute", 0);
@@ -58,7 +58,7 @@ public class Dawn extends Activity implements OnClickListener {
 		long halfDayMillis = 1000L*60L*60L*12L; 
 		long alarmStartMillis;
 		alarmStartMillis = alarmStart.getTimeInMillis();
- 
+
 		if(alarmStartMillis - rightNowMillis > halfDayMillis)
 		{
 			alarmStart.add(Calendar.DAY_OF_YEAR, -1);
@@ -67,10 +67,10 @@ public class Dawn extends Activity implements OnClickListener {
 		{
 			alarmStart.add(Calendar.DAY_OF_YEAR, 1);
 		}
-		
+
 		return alarmStart;
 	}
-	
+
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -124,9 +124,9 @@ public class Dawn extends Activity implements OnClickListener {
 		}
 		else
 		{
-			long dawnStartMillis = alarmStart.getTimeInMillis(); 
+			long dawnStartMillis = alarmStart.getTimeInMillis();
 			m_alarmStartMillis =
-					dawnStartMillis + (pref.getInt("light_start", 0)*1000*60);
+					dawnStartMillis + (pref.getInt("light_start", 0)*1000L*60L);
 			if(savedInstanceState != null)
 			{
 				if(savedInstanceState.containsKey(ALARM_START_MILLIS))
@@ -134,16 +134,15 @@ public class Dawn extends Activity implements OnClickListener {
 					m_alarmStartMillis = savedInstanceState.getLong(ALARM_START_MILLIS);
 				}
 			}
-			m_alarmEndMillis = dawnStartMillis + (1000*60*pref.getInt("light_max", 15));
+			m_alarmEndMillis = dawnStartMillis + (1000L*60L*pref.getInt("light_max", 15));
 
 			m_dawnColor = pref.getInt("color", 0x4040FF);
 			Intent sound = new Intent(getApplicationContext(), DawnSound.class);
 			sound.putExtra(DawnSound.EXTRA_VIBRATE, pref.getBoolean("vibrate", false));
-			long soundStart = dawnStartMillis + (pref.getInt("sound_start", 15)*1000*60); 
-			sound.putExtra(DawnSound.EXTRA_SOUND_START_MILLIS,
-					soundStart);
-			sound.putExtra(DawnSound.EXTRA_SOUND_END_MILLIS,
-					dawnStartMillis + (pref.getInt("sound_max", 0)*1000*60) - soundStart);
+			long soundStart = dawnStartMillis + (pref.getInt("sound_start", 15)*1000L*60L);
+			long soundEnd = dawnStartMillis + (dawnStartMillis + (pref.getInt("sound_max", 15)*1000L*60L) - soundStart);
+			sound.putExtra(DawnSound.EXTRA_SOUND_START_MILLIS, soundStart);
+			sound.putExtra(DawnSound.EXTRA_SOUND_END_MILLIS, soundEnd);
 			sound.putExtra(DawnSound.EXTRA_SOUND_URI, pref.getString("sound", ""));
 			if(pref.contains("volume"))
 				sound.putExtra(DawnSound.EXTRA_SOUND_VOLUME, pref.getInt("volume", 0));			
@@ -175,7 +174,7 @@ public class Dawn extends Activity implements OnClickListener {
 		stopService(sound);
 		this.finish();
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see android.app.Activity#onKeyDown(int, android.view.KeyEvent)
 	 */
@@ -184,7 +183,7 @@ public class Dawn extends Activity implements OnClickListener {
 		stopDawn();
 		return super.onKeyDown(keyCode, event);
 	}
-	
+
 	public void onClick(View v) {
 		stopDawn();
 	}
@@ -193,23 +192,23 @@ public class Dawn extends Activity implements OnClickListener {
 	{
 		int r, g, b;
 		int rgb_new;
-		
+
 		r = (rgb >> 16)&0xFF;
 		g = (rgb >>  8)&0xFF;
 		b = (rgb >>  0)&0xFF;
-		
+
 		if(percent > 100) percent = 100;
 		if(percent < 0) percent = 0;
-		
+
 		r = (r*percent)/100;
 		g = (g*percent)/100;
 		b = (b*percent)/100;
-		
+
 		rgb_new = (r<<16) | (g<<8) | (b<<0);
-		
+
 		return rgb_new;
 	}
-	
+
 	private void updateBrightness(long currentTimeMillis)
 	{
 		long level_percent;
