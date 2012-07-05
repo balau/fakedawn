@@ -140,7 +140,7 @@ public class Dawn extends Activity implements OnClickListener {
 			Intent sound = new Intent(getApplicationContext(), DawnSound.class);
 			sound.putExtra(DawnSound.EXTRA_VIBRATE, pref.getBoolean("vibrate", false));
 			long soundStart = dawnStartMillis + (pref.getInt("sound_start", 15)*1000L*60L);
-			long soundEnd = dawnStartMillis + (dawnStartMillis + (pref.getInt("sound_max", 15)*1000L*60L) - soundStart);
+			long soundEnd = dawnStartMillis + (pref.getInt("sound_max", 15)*1000L*60L);
 			sound.putExtra(DawnSound.EXTRA_SOUND_START_MILLIS, soundStart);
 			sound.putExtra(DawnSound.EXTRA_SOUND_END_MILLIS, soundEnd);
 			sound.putExtra(DawnSound.EXTRA_SOUND_URI, pref.getString("sound", ""));
