@@ -28,8 +28,11 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.Toast;
 
 public class Alarm extends Service {
+
+	public static final String EXTRA_SHOW_TOAST = "org.balau.fakedawn.Alarm.EXTRA_SHOW_TOAST";
 
 	@Override
 	public IBinder onBind(Intent arg0) {
@@ -42,6 +45,9 @@ public class Alarm extends Service {
 	 */
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
+		
+		boolean showToast = intent.getBooleanExtra(EXTRA_SHOW_TOAST, false);
+		
 		SharedPreferences pref = getApplicationContext().getSharedPreferences("main", MODE_PRIVATE);
 
 		AlarmManager am = (AlarmManager) getSystemService(ALARM_SERVICE);
@@ -58,7 +64,7 @@ public class Alarm extends Service {
 				0);
 		
 		am.cancel(openDawnPendingIntent);
-
+		String message;
 		if(pref.getBoolean("enabled", false))
 		{
 			Calendar nextAlarmTime = Calendar.getInstance();
@@ -76,11 +82,18 @@ public class Alarm extends Service {
 					nextAlarmTime.getTimeInMillis(),
 					AlarmManager.INTERVAL_DAY,
 					openDawnPendingIntent);
-			Log.d("FakeDawn", 
-					String.format("Alarm set for %02d:%02d.",
-							nextAlarmTime.get(Calendar.HOUR_OF_DAY),
-							nextAlarmTime.get(Calendar.MINUTE)));
-
+			message = String.format("Fake Dawn Alarm set for %02d:%02d.",
+					nextAlarmTime.get(Calendar.HOUR_OF_DAY),
+					nextAlarmTime.get(Calendar.MINUTE));
+		}
+		else
+		{
+			message = "Fake Dawn Alarm Disabled.";
+		}
+		Log.d("FakeDawn", message);
+		if(showToast)
+		{
+			Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
 		}
 		// If we get killed, after returning from here, restart
 		return START_STICKY;

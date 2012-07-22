@@ -316,6 +316,7 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 			editor.commit();
 
 			Intent updateAlarm = new Intent(getApplicationContext(), Alarm.class);
+			updateAlarm.putExtra(Alarm.EXTRA_SHOW_TOAST, true);
 			getApplicationContext().startService(updateAlarm);
 			Log.d("FakeDawn", "Preferences saved.");
 			finish();
