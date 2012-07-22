@@ -25,3 +25,7 @@ convert ./FakeDawn.svg -adaptive-resize 72x72 ../res/drawable-hdpi/ic_launcher.p
 convert ./FakeDawn.svg -adaptive-resize 48x48 ../res/drawable-mdpi/ic_launcher.png
 convert ./FakeDawn.svg -adaptive-resize 36x36 ../res/drawable-ldpi/ic_launcher.png
 
+convert ./sound.svg -adaptive-resize 96x96 ../res/drawable/sound.png
+
+convert ./sunrise.svg -adaptive-resize 96x96 ../res/drawable/sunrise.png
+
