@@ -24,31 +24,43 @@
                 <requestFocus />
             </CheckBox>
 
-            <TextView
-                android:id="@+id/textView1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="Dawn Time"
-                android:textAppearance="?android:attr/textAppearanceMedium" />
-
-            <org.balau.fakedawn.TimeSlider
-                android:id="@+id/timeSlider1"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content" >
 
-            <TextView
-                android:id="@+id/textView6"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="Sound Time"
-                android:textAppearance="?android:attr/textAppearanceMedium" />
+                <ImageView
+                    android:id="@+id/imageView1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:src="@drawable/sunrise" />
 
-            <org.balau.fakedawn.TimeSlider
-                android:id="@+id/timeSlider2"
+                <org.balau.fakedawn.TimeSlider
+                    android:id="@+id/timeSlider1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+            </LinearLayout>
+
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content" >
+
+                <ImageView
+                    android:id="@+id/imageView2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:src="@drawable/sound" />
+
+                <org.balau.fakedawn.TimeSlider
+                    android:id="@+id/timeSlider2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/textView3"
@@ -75,7 +87,9 @@
             <SeekBar
                 android:id="@+id/seekBarVolume"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="50dp"
+                android:layout_marginRight="50dp" />
 
             <CheckBox
                 android:id="@+id/checkBoxVibrate"
