@@ -47,6 +47,7 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -655,4 +656,19 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 								});
 					}
 				}, RESIZE_SLIDERS_DELAY_MILLIS);	}
+
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onKeyDown(int, android.view.KeyEvent)
+	 */
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		// TODO Auto-generated method stub
+		if(keyCode == KeyEvent.KEYCODE_MENU)
+		{
+			showHelp();
+			return true;
+		}
+		else
+			return super.onKeyDown(keyCode, event);
+	}
 }
