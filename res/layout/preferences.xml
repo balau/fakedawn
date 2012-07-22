@@ -15,14 +15,14 @@
             android:layout_height="wrap_content"
             android:orientation="vertical" >
 
-            <CheckBox
-                android:id="@+id/checkBoxAlarmEnabled"
-                android:layout_width="wrap_content"
+            <ToggleButton
+                android:id="@+id/toggleButtonAlarmEnabled"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Dawn Enabled" >
-
-                <requestFocus />
-            </CheckBox>
+                android:layout_margin="20dp"
+                android:text="ToggleButton"
+                android:textOff="Alarm is Disactivated"
+                android:textOn="Alarm is Activated" />
 
             <LinearLayout
                 android:layout_width="match_parent"

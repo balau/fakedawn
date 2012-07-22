@@ -49,6 +49,7 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.SeekBar;
+import android.widget.ToggleButton;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.TimePicker;
@@ -100,9 +101,8 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 
 		CheckBox cb;
 
-		cb = (CheckBox) findViewById(R.id.checkBoxAlarmEnabled);
-		cb.setChecked(pref.getBoolean("enabled", false));
-		cb.requestFocus();
+		ToggleButton alarmEnabledButton = (ToggleButton) findViewById(R.id.toggleButtonAlarmEnabled);
+		alarmEnabledButton.setChecked(pref.getBoolean("enabled", false));
 		
 		TimeSlider lightSlider = (TimeSlider)findViewById(R.id.timeSlider1);
 		TimeSlider soundSlider = (TimeSlider)findViewById(R.id.timeSlider2);
@@ -271,11 +271,12 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 			}
 
 			editor.putInt("color", m_dawnColor);
+
 			
 			CheckBox cb;
 
-			cb = (CheckBox) findViewById(R.id.checkBoxAlarmEnabled);
-			editor.putBoolean("enabled", cb.isChecked());
+			ToggleButton alarmEnabledButton = (ToggleButton) findViewById(R.id.toggleButtonAlarmEnabled);
+			editor.putBoolean("enabled", alarmEnabledButton.isChecked());
 
 			cb = (CheckBox) findViewById(R.id.checkBoxMondays);
 			editor.putBoolean("mondays", cb.isChecked());
