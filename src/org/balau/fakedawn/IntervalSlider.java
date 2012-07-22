@@ -303,7 +303,7 @@ public class IntervalSlider extends View {
 
 		textPaint.getTextBounds(m_textRight, 0, m_textRight.length(), bounds);
 		yText = rightCursorEnd-bounds.exactCenterY();
-		if(w*m_rightCursorPos+cursorRadius+bounds.width() > canvas.getWidth())
+		if(w*m_rightCursorPos+cursorRadius+bounds.width() > w)
 		{
 			xText = w*m_rightCursorPos-cursorRadius-bounds.right;
 			
