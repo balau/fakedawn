@@ -155,8 +155,8 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		if(volume > maxVolume) volume = maxVolume;
 		seekBarVolume.setProgress(volume);
 
-		cb = (CheckBox) findViewById(R.id.checkBoxVibrate);
-		cb.setChecked(pref.getBoolean("vibrate", false));
+		ToggleButton vibrateButton = (ToggleButton) findViewById(R.id.toggleButtonVibrate);
+		vibrateButton.setChecked(pref.getBoolean("vibrate", false));
 
 		updateSoundViews();
 
@@ -310,8 +310,8 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 			SeekBar sb = (SeekBar)findViewById(R.id.seekBarVolume);
 			editor.putInt("volume", sb.getProgress());
 			
-			cb = (CheckBox) findViewById(R.id.checkBoxVibrate);
-			editor.putBoolean("vibrate", cb.isChecked());
+			ToggleButton vibrateButton = (ToggleButton) findViewById(R.id.toggleButtonVibrate);
+			editor.putBoolean("vibrate", vibrateButton.isChecked());
 
 			editor.commit();
 
@@ -411,7 +411,7 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 	{
 		Button soundButton = (Button) findViewById(R.id.buttonSound);
 		SeekBar seekBarVolume = (SeekBar)findViewById(R.id.seekBarVolume);
-		CheckBox checkBoxVibrate = (CheckBox) findViewById(R.id.checkBoxVibrate);
+		ToggleButton vibrateButton = (ToggleButton) findViewById(R.id.toggleButtonVibrate);
 		TimeSlider soundSlider = (TimeSlider)findViewById(R.id.timeSlider2);
 
 		boolean soundViewsEnabled = (m_soundUri != null);
@@ -426,7 +426,7 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 			soundButton.setText("Silent");
 		}
 		seekBarVolume.setEnabled(soundViewsEnabled);
-		checkBoxVibrate.setEnabled(soundViewsEnabled);
+		vibrateButton.setEnabled(soundViewsEnabled);
 		soundSlider.setEnabled(soundViewsEnabled);
 		
 		m_preview.setSoundUri(this, m_soundUri);

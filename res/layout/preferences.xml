@@ -67,6 +67,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
+                android:layout_marginTop="20dp"
                 android:text="Alarm Sound"
                 android:textAppearance="?android:attr/textAppearanceMedium" />
 
@@ -83,6 +84,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
+                android:layout_marginTop="20dp"
                 android:text="Volume"
                 android:textAppearance="?android:attr/textAppearanceMedium" />
 
@@ -93,24 +95,39 @@
                 android:layout_marginLeft="50dp"
                 android:layout_marginRight="50dp" />
 
-            <CheckBox
-                android:id="@+id/checkBoxVibrate"
+            <TextView
+                android:id="@+id/TextView01"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Vibrate with Sound" />
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="20dp"
+                android:text="Vibration"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+            <ToggleButton
+                android:id="@+id/toggleButtonVibrate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:text="ToggleButton"
+                android:textOff="Disactivated"
+                android:textOn="Activated with Sound" />
 
             <TextView
                 android:id="@+id/textView5"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
+                android:layout_marginTop="20dp"
                 android:text="Week Days"
                 android:textAppearance="?android:attr/textAppearanceMedium" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="20dp" >
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp" >
 
                 <LinearLayout
                     android:layout_width="wrap_content"
