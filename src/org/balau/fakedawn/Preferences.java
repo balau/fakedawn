@@ -29,11 +29,14 @@ import org.balau.fakedawn.TimeSlider.DawnTime;
 import org.balau.fakedawn.TimeSlider.OnTimesChangedListener;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.TimePickerDialog;
 import android.app.TimePickerDialog.OnTimeSetListener;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.PorterDuff;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -78,6 +81,9 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 	private static final int RESIZE_SLIDERS_DELAY_MILLIS = 1000;
 	private static final int SLIDERS_PADDING_MINUTES = 10;
 
+	private boolean m_showHelp = false;
+	private HelpListener m_helpListener = new HelpListener();
+	
 	/* (non-Javadoc)
 	 * @see android.app.Activity#onCreate(android.os.Bundle)
 	 */
@@ -161,6 +167,16 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		updateSoundViews();
 
 		resizeSliders();
+		
+		String firstTimeVersion = pref.getString("first_time_version", "");
+		String version = "";
+		try {
+			version = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+		} catch (NameNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		m_showHelp = firstTimeVersion == "" || !firstTimeVersion.equals(version);
 
 		Log.d("FakeDawn", "Preferences loaded.");
 	}
@@ -171,9 +187,43 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 	@Override
 	protected void onStart() {
 		super.onStart();
-
+		if(m_showHelp)
+		{
+			showHelp();
+		}
 	}
 
+	private void showHelp()
+	{
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setPositiveButton("Close", (DialogInterface.OnClickListener) m_helpListener);
+		String message = "";
+		message = message.concat("");
+		message += "Fake Dawn gradually increases brightness and sound volume to lead you out of deep sleep and wake you up gently.\n\n";
+		message += "Choose when the brightness will start to rise and when it reaches the max using the first horizontal bar.\n\n";
+		message += "Adjust when and how the sound will play using the second bar.";
+		builder.setMessage(message);
+		builder.create().show();
+	}
+	
+	private class HelpListener implements DialogInterface.OnClickListener {
+
+		@Override
+		public void onClick(DialogInterface dialog, int which) {
+			SharedPreferences pref = getApplicationContext().getSharedPreferences("main", MODE_PRIVATE);
+			String version = "";
+			try {
+				version = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+			} catch (NameNotFoundException e) {
+				e.printStackTrace();
+			}
+			SharedPreferences.Editor editor = pref.edit();
+			editor.putString("first_time_version", version);
+			editor.commit();
+		}
+		
+	}
+	
 	private void resizeSliders()
 	{
 		TimeSlider lightSlider = (TimeSlider)findViewById(R.id.timeSlider1);
