@@ -32,32 +32,41 @@
                     android:id="@+id/imageView1"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="top"
                     android:layout_weight="1"
+                    android:scaleType="fitStart"
                     android:src="@drawable/sunrise" />
 
                 <org.balau.fakedawn.TimeSlider
                     android:id="@+id/timeSlider1"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
+                    android:layout_marginRight="20dp"
                     android:layout_weight="1" />
 
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" >
+                android:layout_height="wrap_content"
+                android:baselineAligned="true" >
 
                 <ImageView
                     android:id="@+id/imageView2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="top"
                     android:layout_weight="1"
+                    android:scaleType="fitStart"
                     android:src="@drawable/sound" />
 
                 <org.balau.fakedawn.TimeSlider
                     android:id="@+id/timeSlider2"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
+                    android:layout_marginRight="20dp"
                     android:layout_weight="1" />
 
             </LinearLayout>
