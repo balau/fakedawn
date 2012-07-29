@@ -16,6 +16,8 @@
    version="1.1"
    inkscape:version="0.48.3.1 r9886"
    sodipodi:docname="sunrise.svg">
+  <title
+     id="title3101">Android FakeDawn Brightness Icon</title>
   <defs
      id="defs4">
     <linearGradient
@@ -115,7 +117,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="6.5"
-     inkscape:cx="31.173178"
+     inkscape:cx="3.6347165"
      inkscape:cy="48"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
@@ -133,8 +135,41 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title>Android FakeDawn Brightness Icon</dc:title>
+        <cc:license
+           rdf:resource="http://creativecommons.org/licenses/by-sa/3.0/" />
+        <dc:date>2012-07-29</dc:date>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Francesco Balducci</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>Francesco Balducci</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:publisher>
+          <cc:Agent>
+            <dc:title>Francesco Balducci</dc:title>
+          </cc:Agent>
+        </dc:publisher>
       </cc:Work>
+      <cc:License
+         rdf:about="http://creativecommons.org/licenses/by-sa/3.0/">
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Reproduction" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Distribution" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#Notice" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#Attribution" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#DerivativeWorks" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#ShareAlike" />
+      </cc:License>
     </rdf:RDF>
   </metadata>
   <g
