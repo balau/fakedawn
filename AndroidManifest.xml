@@ -29,6 +29,7 @@
             </intent-filter>
         </receiver>
         <service android:name="DawnSound"></service>
+        <activity android:name="License"></activity>
     </application>
 
 </manifest>

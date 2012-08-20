@@ -198,6 +198,7 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 	{
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setPositiveButton("Close", (DialogInterface.OnClickListener) m_helpListener);
+		builder.setNeutralButton("Read License", (DialogInterface.OnClickListener) m_helpListener);
 		String message = "";
 		message = message.concat("");
 		message += "Fake Dawn gradually increases brightness and sound volume to lead you out of deep sleep and wake you up gently.\n\n";
@@ -211,6 +212,7 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 
 		@Override
 		public void onClick(DialogInterface dialog, int which) {
+			
 			SharedPreferences pref = getApplicationContext().getSharedPreferences("main", MODE_PRIVATE);
 			String version = "";
 			try {
@@ -221,6 +223,17 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 			SharedPreferences.Editor editor = pref.edit();
 			editor.putString("first_time_version", version);
 			editor.commit();
+			
+			switch(which)
+			{
+			case DialogInterface.BUTTON_POSITIVE:
+				break;
+			case DialogInterface.BUTTON_NEUTRAL:
+				startActivity(new Intent(getApplicationContext(), License.class));
+				break;
+			case DialogInterface.BUTTON_NEGATIVE:
+				break;
+			}
 		}
 		
 	}
