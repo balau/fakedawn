@@ -45,9 +45,17 @@ public class Alarm extends Service {
 	 */
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		
-		boolean showToast = intent.getBooleanExtra(EXTRA_SHOW_TOAST, false);
-		
+
+		boolean showToast;
+		if(intent != null)
+		{
+			showToast = intent.getBooleanExtra(EXTRA_SHOW_TOAST, false);
+		}
+		else // intent is null when Service is restarted
+		{
+			showToast = false;
+		}
+
 		SharedPreferences pref = getApplicationContext().getSharedPreferences("main", MODE_PRIVATE);
 
 		AlarmManager am = (AlarmManager) getSystemService(ALARM_SERVICE);
@@ -62,7 +70,7 @@ public class Alarm extends Service {
 				0, 
 				openDawn,
 				0);
-		
+
 		am.cancel(openDawnPendingIntent);
 		String message;
 		if(pref.getBoolean("enabled", false))
