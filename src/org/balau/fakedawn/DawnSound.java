@@ -170,7 +170,7 @@ public class DawnSound extends Service implements OnPreparedListener, OnCompleti
 				Log.d("FakeDawn", "Sound scheduled.");
 			}
 		}
-		return START_STICKY;
+		return START_REDELIVER_INTENT;
 	}
 
 	private void updateVolume(long currentTimeMillis)
