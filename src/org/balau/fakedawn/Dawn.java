@@ -23,6 +23,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -170,8 +171,12 @@ public class Dawn extends Activity implements OnClickListener {
 
 	private void stopDawn()
 	{
-		Intent sound = new Intent(getApplicationContext(), DawnSound.class);
+		Context appContext = getApplicationContext();
+		Intent sound = new Intent(appContext, DawnSound.class);
 		stopService(sound);
+		Intent stopAlarm = new Intent(appContext, AlarmReceiver.class);
+		stopAlarm.setAction(AlarmReceiver.ACTION_STOP_ALARM);
+		appContext.sendBroadcast(stopAlarm);
 		this.finish();
 	}
 

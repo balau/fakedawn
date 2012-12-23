@@ -60,12 +60,8 @@ public class Alarm extends Service {
 
 		AlarmManager am = (AlarmManager) getSystemService(ALARM_SERVICE);
 
-		Intent openDawn = new Intent(getApplicationContext(), Dawn.class);
-		openDawn.setFlags(
-				Intent.FLAG_ACTIVITY_NEW_TASK|
-				Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS|
-				Intent.FLAG_FROM_BACKGROUND);
-		PendingIntent openDawnPendingIntent = PendingIntent.getActivity(
+		Intent openDawn = new Intent(AlarmReceiver.ACTION_START_ALARM);
+		PendingIntent openDawnPendingIntent = PendingIntent.getBroadcast(
 				getApplicationContext(), 
 				0, 
 				openDawn,

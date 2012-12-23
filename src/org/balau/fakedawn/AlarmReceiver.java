@@ -32,8 +32,33 @@ import android.util.Log;
 public class AlarmReceiver extends BroadcastReceiver {
 	static final String ACTION_START_ALARM = "org.balau.fakedawn.AlarmReceiver.ACTION_START_ALARM";
 	static final String ACTION_STOP_ALARM = "org.balau.fakedawn.AlarmReceiver.ACTION_STOP_ALARM";
-	
-	WakeLock m_alarmWakeLock;
+
+	private static WakeLock m_alarmWakeLock = null;
+
+	private void releaseWakeLock(boolean expectedHeld) {
+		if(AlarmReceiver.m_alarmWakeLock != null)
+		{
+			if(!expectedHeld)
+				Log.w("FakeDawn", "ACTION_START_ALARM received but WakeLock already present.");
+			if(AlarmReceiver.m_alarmWakeLock.isHeld())
+			{
+				if(!expectedHeld)
+					Log.w("FakeDawn", "ACTION_START_ALARM received but WakeLock already held.");
+				AlarmReceiver.m_alarmWakeLock.release();
+				AlarmReceiver.m_alarmWakeLock = null;
+			}
+			else
+			{
+				if(expectedHeld)
+					Log.w("FakeDawn", "ACTION_STOP_ALARM received but no WakeLock held.");
+			}
+		}
+		else
+		{
+			if(expectedHeld)
+				Log.w("FakeDawn", "ACTION_STOP_ALARM received but no WakeLock present.");
+		}
+	}
 	
 	/* (non-Javadoc)
 	 * @see android.content.BroadcastReceiver#onReceive(android.content.Context, android.content.Intent)
@@ -44,9 +69,13 @@ public class AlarmReceiver extends BroadcastReceiver {
 		
 		if(intent.getAction().equals(ACTION_START_ALARM))
 		{
+			Log.d("FakeDawn", "ACTION_START_ALARM received.");
 			PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-			WakeLock m_alarmWakeLock = pm.newWakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP, "FakeDawn.AlarmReceiver");
-			m_alarmWakeLock.acquire();
+			releaseWakeLock(false);
+			AlarmReceiver.m_alarmWakeLock = pm.newWakeLock(
+					PowerManager.FULL_WAKE_LOCK|PowerManager.ACQUIRE_CAUSES_WAKEUP,
+					"FakeDawn.AlarmReceiver");
+			AlarmReceiver.m_alarmWakeLock.acquire();
 			Intent openDawn = new Intent(context, Dawn.class);
 			openDawn.setFlags(
 					Intent.FLAG_ACTIVITY_NEW_TASK|
@@ -57,22 +86,9 @@ public class AlarmReceiver extends BroadcastReceiver {
 		}
 		else if(intent.getAction().equals(ACTION_STOP_ALARM))
 		{
-			if(m_alarmWakeLock != null)
-			{
-				if(m_alarmWakeLock.isHeld())
-				{
-					m_alarmWakeLock.release();
-					//TODO: stop service and activity?
-				}
-				else
-				{
-					Log.w("FakeDawn", "ACTION_STOP_ALARM received but no WakeLock held.");
-				}
-			}
-			else
-			{
-				Log.w("FakeDawn", "ACTION_STOP_ALARM received but no WakeLock present.");
-			}
+			Log.d("FakeDawn", "ACTION_STOP_ALARM received.");
+			releaseWakeLock(true);
+			//TODO: stop service and activity?
 		}
 	}
 
