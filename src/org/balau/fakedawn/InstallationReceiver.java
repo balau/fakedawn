@@ -67,6 +67,7 @@ public class InstallationReceiver extends BroadcastReceiver {
 					openDawn,
 					0);
 			am.cancel(openDawnPendingIntent);
+			Log.d("FakeDawn", "1.0 alarms canceled.");
 		}
 	}
 

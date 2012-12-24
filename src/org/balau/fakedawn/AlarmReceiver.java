@@ -33,6 +33,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 	static final String ACTION_START_ALARM = "org.balau.fakedawn.AlarmReceiver.ACTION_START_ALARM";
 	static final String ACTION_STOP_ALARM = "org.balau.fakedawn.AlarmReceiver.ACTION_STOP_ALARM";
 
+	//TODO: synchronized access?
 	private static WakeLock m_alarmWakeLock = null;
 
 	private void releaseWakeLock(boolean expectedHeld) {
