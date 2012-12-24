@@ -30,18 +30,7 @@ public class StartAtBoot extends BroadcastReceiver {
 	 */
 	@Override
 	public void onReceive(Context context, Intent intent) {
-		boolean mustStart = false;
 		if(intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED))
-		{
-			mustStart = true;
-		}
-		else if (intent.getAction().equals(Intent.ACTION_PACKAGE_REPLACED)) {
-			if (intent.getData().getSchemeSpecificPart().equals(context.getPackageName())) {
-				mustStart = true;
-				Log.d("FakeDawn", "Package Replaced.");
-			}
-		}
-		if(mustStart)
 		{
 			Intent startService = new Intent(context, Alarm.class);			
 			context.startService(startService);
