@@ -18,9 +18,12 @@
  */
 package org.balau.fakedawn;
 
+import java.util.Calendar;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.util.Log;
@@ -61,6 +64,66 @@ public class AlarmReceiver extends BroadcastReceiver {
 		}
 	}
 	
+	public static Calendar getAlarmStart(SharedPreferences pref)
+	{
+		Calendar rightNow = Calendar.getInstance();
+
+		long rightNowMillis = rightNow.getTimeInMillis();
+		int hour = pref.getInt("dawn_start_hour", 8);
+		int minute = pref.getInt("dawn_start_minute", 0);
+		Calendar alarmStart = (Calendar) rightNow.clone();
+		alarmStart.set(Calendar.HOUR_OF_DAY, hour);
+		alarmStart.set(Calendar.MINUTE, minute);
+		long halfDayMillis = 1000L*60L*60L*12L; 
+		long alarmStartMillis;
+		alarmStartMillis = alarmStart.getTimeInMillis();
+
+		if(alarmStartMillis - rightNowMillis > halfDayMillis)
+		{
+			alarmStart.add(Calendar.DAY_OF_YEAR, -1);
+		}
+		else if(alarmStartMillis - rightNowMillis < -halfDayMillis)
+		{
+			alarmStart.add(Calendar.DAY_OF_YEAR, 1);
+		}
+
+		return alarmStart;
+	}
+	
+	private boolean fireToday(Context context) {
+		SharedPreferences pref = context.getSharedPreferences("main", Context.MODE_PRIVATE);
+		String day;
+		Calendar alarmStart = getAlarmStart(pref);
+
+		switch (alarmStart.get(Calendar.DAY_OF_WEEK)) {
+		case Calendar.MONDAY:
+			day = "mondays";
+			break;
+		case Calendar.TUESDAY:
+			day = "tuesdays";
+			break;
+		case Calendar.WEDNESDAY:
+			day = "wednesdays";
+			break;
+		case Calendar.THURSDAY:
+			day = "thursdays";
+			break;
+		case Calendar.FRIDAY:
+			day = "fridays";
+			break;
+		case Calendar.SATURDAY:
+			day = "saturdays";
+			break;
+		case Calendar.SUNDAY:
+			day = "sundays";
+			break;
+		default:
+			day = "NON_EXISTING_WEEKDAY";
+			break;
+		}
+		return pref.getBoolean(day, false);
+	}
+	
 	/* (non-Javadoc)
 	 * @see android.content.BroadcastReceiver#onReceive(android.content.Context, android.content.Intent)
 	 */
@@ -71,19 +134,26 @@ public class AlarmReceiver extends BroadcastReceiver {
 		if(intent.getAction().equals(ACTION_START_ALARM))
 		{
 			Log.d("FakeDawn", "ACTION_START_ALARM received.");
-			PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-			releaseWakeLock(false);
-			AlarmReceiver.m_alarmWakeLock = pm.newWakeLock(
-					PowerManager.FULL_WAKE_LOCK|PowerManager.ACQUIRE_CAUSES_WAKEUP,
-					"FakeDawn.AlarmReceiver");
-			AlarmReceiver.m_alarmWakeLock.acquire();
-			Intent openDawn = new Intent(context, Dawn.class);
-			openDawn.setFlags(
-					Intent.FLAG_ACTIVITY_NEW_TASK|
-					Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS|
-					Intent.FLAG_FROM_BACKGROUND);
-			context.startActivity(openDawn);
-			//TODO: start sound service?
+			
+			if(fireToday(context)) {
+				PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+				releaseWakeLock(false);
+				AlarmReceiver.m_alarmWakeLock = pm.newWakeLock(
+						PowerManager.FULL_WAKE_LOCK|PowerManager.ACQUIRE_CAUSES_WAKEUP,
+						"FakeDawn.AlarmReceiver");
+				AlarmReceiver.m_alarmWakeLock.acquire();
+				Intent openDawn = new Intent(context, Dawn.class);
+				openDawn.setFlags(
+						Intent.FLAG_ACTIVITY_NEW_TASK|
+						Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS|
+						Intent.FLAG_FROM_BACKGROUND);
+				Log.d("FakeDawn", "Starting Dawn Activity.");
+				context.startActivity(openDawn);
+				//TODO: start sound service?
+			} else {
+				Log.d("FakeDawn", "Not today.");
+			}
+				
 		}
 		else if(intent.getAction().equals(ACTION_STOP_ALARM))
 		{

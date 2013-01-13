@@ -46,32 +46,6 @@ public class Dawn extends Activity implements OnClickListener {
 
 	private int m_dawnColor;
 
-	private Calendar getAlarmStart(SharedPreferences pref)
-	{
-		Calendar rightNow = Calendar.getInstance();
-
-		long rightNowMillis = rightNow.getTimeInMillis();
-		int hour = pref.getInt("dawn_start_hour", 8);
-		int minute = pref.getInt("dawn_start_minute", 0);
-		Calendar alarmStart = (Calendar) rightNow.clone();
-		alarmStart.set(Calendar.HOUR_OF_DAY, hour);
-		alarmStart.set(Calendar.MINUTE, minute);
-		long halfDayMillis = 1000L*60L*60L*12L; 
-		long alarmStartMillis;
-		alarmStartMillis = alarmStart.getTimeInMillis();
-
-		if(alarmStartMillis - rightNowMillis > halfDayMillis)
-		{
-			alarmStart.add(Calendar.DAY_OF_YEAR, -1);
-		}
-		else if(alarmStartMillis - rightNowMillis < -halfDayMillis)
-		{
-			alarmStart.add(Calendar.DAY_OF_YEAR, 1);
-		}
-
-		return alarmStart;
-	}
-
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -90,83 +64,48 @@ public class Dawn extends Activity implements OnClickListener {
 		findViewById(R.id.dawn_background).setOnClickListener(this);
 
 		SharedPreferences pref = getApplicationContext().getSharedPreferences("main", MODE_PRIVATE);
-		String day;
-		Calendar alarmStart = getAlarmStart(pref);
+		Calendar alarmStart = AlarmReceiver.getAlarmStart(pref);
 
-		switch (alarmStart.get(Calendar.DAY_OF_WEEK)) {
-		case Calendar.MONDAY:
-			day = "mondays";
-			break;
-		case Calendar.TUESDAY:
-			day = "tuesdays";
-			break;
-		case Calendar.WEDNESDAY:
-			day = "wednesdays";
-			break;
-		case Calendar.THURSDAY:
-			day = "thursdays";
-			break;
-		case Calendar.FRIDAY:
-			day = "fridays";
-			break;
-		case Calendar.SATURDAY:
-			day = "saturdays";
-			break;
-		case Calendar.SUNDAY:
-			day = "sundays";
-			break;
-		default:
-			day = "NON_EXISTING_WEEKDAY";
-			break;
-		}
-		if(!pref.getBoolean(day, false))
+		long dawnStartMillis = alarmStart.getTimeInMillis();
+		m_alarmStartMillis =
+				dawnStartMillis + (pref.getInt("light_start", 0)*1000L*60L);
+		if(savedInstanceState != null)
 		{
-			this.finish();
-		}
-		else
-		{
-			long dawnStartMillis = alarmStart.getTimeInMillis();
-			m_alarmStartMillis =
-					dawnStartMillis + (pref.getInt("light_start", 0)*1000L*60L);
-			if(savedInstanceState != null)
+			if(savedInstanceState.containsKey(ALARM_START_MILLIS))
 			{
-				if(savedInstanceState.containsKey(ALARM_START_MILLIS))
-				{
-					m_alarmStartMillis = savedInstanceState.getLong(ALARM_START_MILLIS);
-				}
+				m_alarmStartMillis = savedInstanceState.getLong(ALARM_START_MILLIS);
 			}
-			m_alarmEndMillis = dawnStartMillis + (1000L*60L*pref.getInt("light_max", 15));
-
-			m_dawnColor = pref.getInt("color", 0x4040FF);
-			Intent sound = new Intent(getApplicationContext(), DawnSound.class);
-			sound.putExtra(DawnSound.EXTRA_VIBRATE, pref.getBoolean("vibrate", false));
-			long soundStart = dawnStartMillis + (pref.getInt("sound_start", 15)*1000L*60L);
-			long soundEnd = dawnStartMillis + (pref.getInt("sound_max", 15)*1000L*60L);
-			sound.putExtra(DawnSound.EXTRA_SOUND_START_MILLIS, soundStart);
-			sound.putExtra(DawnSound.EXTRA_SOUND_END_MILLIS, soundEnd);
-			sound.putExtra(DawnSound.EXTRA_SOUND_URI, pref.getString("sound", ""));
-			if(pref.contains("volume"))
-				sound.putExtra(DawnSound.EXTRA_SOUND_VOLUME, pref.getInt("volume", 0));			
-			startService(sound);
-
-			updateBrightness(System.currentTimeMillis());
-
-			m_timer = new Timer();
-			m_timer.schedule(
-					new TimerTask() {
-
-						@Override
-						public void run() {
-							runOnUiThread(
-									new Runnable() {
-										public void run() {
-											updateBrightness(System.currentTimeMillis());
-										}
-									});
-						}
-					}, TIMER_TICK_SECONDS*1000, TIMER_TICK_SECONDS*1000);
-
 		}
+		m_alarmEndMillis = dawnStartMillis + (1000L*60L*pref.getInt("light_max", 15));
+
+		m_dawnColor = pref.getInt("color", 0x4040FF);
+		Intent sound = new Intent(getApplicationContext(), DawnSound.class);
+		sound.putExtra(DawnSound.EXTRA_VIBRATE, pref.getBoolean("vibrate", false));
+		long soundStart = dawnStartMillis + (pref.getInt("sound_start", 15)*1000L*60L);
+		long soundEnd = dawnStartMillis + (pref.getInt("sound_max", 15)*1000L*60L);
+		sound.putExtra(DawnSound.EXTRA_SOUND_START_MILLIS, soundStart);
+		sound.putExtra(DawnSound.EXTRA_SOUND_END_MILLIS, soundEnd);
+		sound.putExtra(DawnSound.EXTRA_SOUND_URI, pref.getString("sound", ""));
+		if(pref.contains("volume"))
+			sound.putExtra(DawnSound.EXTRA_SOUND_VOLUME, pref.getInt("volume", 0));			
+		startService(sound);
+
+		updateBrightness(System.currentTimeMillis());
+
+		m_timer = new Timer();
+		m_timer.schedule(
+				new TimerTask() {
+
+					@Override
+					public void run() {
+						runOnUiThread(
+								new Runnable() {
+									public void run() {
+										updateBrightness(System.currentTimeMillis());
+									}
+								});
+					}
+				}, TIMER_TICK_SECONDS*1000, TIMER_TICK_SECONDS*1000);
 	}
 
 	private void stopDawn()
