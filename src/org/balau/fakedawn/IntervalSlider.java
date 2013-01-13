@@ -20,7 +20,6 @@ package org.balau.fakedawn;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.Parcel;

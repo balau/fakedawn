@@ -24,7 +24,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import android.app.Activity;
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;

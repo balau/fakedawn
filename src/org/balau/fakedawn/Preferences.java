@@ -20,7 +20,6 @@
 package org.balau.fakedawn;
 
 import java.io.IOException;
-import java.util.Calendar;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -37,7 +36,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager.NameNotFoundException;
-import android.graphics.PorterDuff;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
@@ -55,7 +53,6 @@ import android.widget.CheckBox;
 import android.widget.SeekBar;
 import android.widget.ToggleButton;
 import android.widget.SeekBar.OnSeekBarChangeListener;
-import android.widget.TextView;
 import android.widget.TimePicker;
 
 /**
