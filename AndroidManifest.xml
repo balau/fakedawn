@@ -19,7 +19,7 @@
             </intent-filter>
         </activity>
         <service android:name="Alarm"></service>
-        <activity android:name="Dawn" android:taskAffinity="@string/affinity_dawn"></activity>
+        <activity android:name="Dawn" android:taskAffinity="@string/affinity_dawn" android:screenOrientation="fullSensor"></activity>
         <receiver android:name="StartAtBoot">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
