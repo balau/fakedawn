@@ -130,10 +130,11 @@ public class AlarmReceiver extends BroadcastReceiver {
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		// TODO Auto-generated method stub
-		
+
 		if(intent.getAction().equals(ACTION_START_ALARM))
 		{
 			Log.d("FakeDawn", "ACTION_START_ALARM received.");
+			// FIXME use setExact to schedule next alarm. Check if Method exists first.
 			
 			if(fireToday(context)) {
 				PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);

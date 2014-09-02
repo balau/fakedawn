@@ -80,7 +80,7 @@ public class Alarm extends Service {
 				nextAlarmTime.add(Calendar.DAY_OF_YEAR, 1);
 				//TODO: check if enough?
 			}
-
+			// FIXME use setExact to schedule next alarm. Check if Method exists first.
 			am.setRepeating(
 					AlarmManager.RTC_WAKEUP, 
 					nextAlarmTime.getTimeInMillis(),
