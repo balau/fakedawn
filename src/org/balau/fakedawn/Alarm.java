@@ -56,36 +56,11 @@ public class Alarm extends Service {
 			showToast = false;
 		}
 
-		SharedPreferences pref = getApplicationContext().getSharedPreferences("main", MODE_PRIVATE);
-
-		AlarmManager am = (AlarmManager) getSystemService(ALARM_SERVICE);
-
-		Intent openDawn = new Intent(AlarmReceiver.ACTION_START_ALARM);
-		PendingIntent openDawnPendingIntent = PendingIntent.getBroadcast(
-				getApplicationContext(), 
-				0, 
-				openDawn,
-				0);
-
-		am.cancel(openDawnPendingIntent);
+		this.cancel();
 		String message;
-		if(pref.getBoolean("enabled", false))
+		if(this.getPreferences().getBoolean("enabled", false))
 		{
-			Calendar nextAlarmTime = Calendar.getInstance();
-			nextAlarmTime.set(Calendar.HOUR_OF_DAY, pref.getInt("dawn_start_hour", 8));
-			nextAlarmTime.set(Calendar.MINUTE, pref.getInt("dawn_start_minute", 0));
-			nextAlarmTime.set(Calendar.SECOND, 0);
-			if(nextAlarmTime.getTimeInMillis() < System.currentTimeMillis())
-			{
-				nextAlarmTime.add(Calendar.DAY_OF_YEAR, 1);
-				//TODO: check if enough?
-			}
-			// FIXME use setExact to schedule next alarm. Check if Method exists first.
-			am.setRepeating(
-					AlarmManager.RTC_WAKEUP, 
-					nextAlarmTime.getTimeInMillis(),
-					AlarmManager.INTERVAL_DAY,
-					openDawnPendingIntent);
+			Calendar nextAlarmTime = this.set();
 			message = String.format("Fake Dawn Alarm set for %02d:%02d.",
 					nextAlarmTime.get(Calendar.HOUR_OF_DAY),
 					nextAlarmTime.get(Calendar.MINUTE));
@@ -101,5 +76,58 @@ public class Alarm extends Service {
 		}
 		// If we get killed, after returning from here, restart
 		return START_STICKY;
+	}
+	
+	private PendingIntent getOpenDawnPendingIntent()
+	{
+		Intent openDawn = new Intent(AlarmReceiver.ACTION_START_ALARM);
+		PendingIntent openDawnPendingIntent = PendingIntent.getBroadcast(
+				getApplicationContext(), 
+				0, 
+				openDawn,
+				0);
+		return openDawnPendingIntent;
+	}
+	
+	private AlarmManager getAlarmManager()
+	{
+		return (AlarmManager) getSystemService(ALARM_SERVICE);
+	}
+	
+	private SharedPreferences getPreferences()
+	{
+		return getApplicationContext().getSharedPreferences("main", MODE_PRIVATE);
+	}
+	
+	private void cancel()
+	{
+		this.getAlarmManager().cancel(
+				this.getOpenDawnPendingIntent());
+	}
+	
+	private Calendar set()
+	{
+		SharedPreferences pref = this.getPreferences();
+		Calendar nextAlarmTime = Calendar.getInstance();
+		nextAlarmTime.set(Calendar.HOUR_OF_DAY, pref.getInt("dawn_start_hour", 8));
+		nextAlarmTime.set(Calendar.MINUTE, pref.getInt("dawn_start_minute", 0));
+		nextAlarmTime.set(Calendar.SECOND, 0);
+		if(nextAlarmTime.getTimeInMillis() < System.currentTimeMillis())
+		{
+			nextAlarmTime.add(Calendar.DAY_OF_YEAR, 1);
+			//TODO: check if enough?
+		}
+		this.set(nextAlarmTime);
+		return nextAlarmTime;
+	}
+	
+	private void set(Calendar nextAlarmTime)
+	{
+		// FIXME use setExact to schedule next alarm. Check if Method exists first.
+		this.getAlarmManager().setRepeating(
+				AlarmManager.RTC_WAKEUP, 
+				nextAlarmTime.getTimeInMillis(),
+				AlarmManager.INTERVAL_DAY,
+				this.getOpenDawnPendingIntent());
 	}
 }
