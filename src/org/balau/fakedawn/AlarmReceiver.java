@@ -134,7 +134,10 @@ public class AlarmReceiver extends BroadcastReceiver {
 		if(intent.getAction().equals(ACTION_START_ALARM))
 		{
 			Log.d("FakeDawn", "ACTION_START_ALARM received.");
-			// FIXME use setExact to schedule next alarm. Check if Method exists first.
+			
+			// Tell Alarm Service to set next alarm.
+			Intent updateAlarm = new Intent(context, Alarm.class);
+			context.startService(updateAlarm);
 			
 			if(fireToday(context)) {
 				PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
