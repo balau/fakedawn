@@ -63,9 +63,7 @@ public class Alarm extends Service {
 		if(this.getPreferences().getBoolean("enabled", false))
 		{
 			Calendar nextAlarmTime = this.set();
-			message = String.format("Fake Dawn Alarm set for %02d:%02d.",
-					nextAlarmTime.get(Calendar.HOUR_OF_DAY),
-					nextAlarmTime.get(Calendar.MINUTE));
+			message = this.nextAlarmMessage(nextAlarmTime);
 		}
 		else
 		{
@@ -114,7 +112,8 @@ public class Alarm extends Service {
 		nextAlarmTime.set(Calendar.HOUR_OF_DAY, pref.getInt("dawn_start_hour", 8));
 		nextAlarmTime.set(Calendar.MINUTE, pref.getInt("dawn_start_minute", 0));
 		nextAlarmTime.set(Calendar.SECOND, 0);
-		if(nextAlarmTime.getTimeInMillis() < System.currentTimeMillis())
+		long toleranceMillis = 1000*10; //10s
+		if(nextAlarmTime.getTimeInMillis() < System.currentTimeMillis() + toleranceMillis)
 		{
 			nextAlarmTime.add(Calendar.DAY_OF_YEAR, 1);
 			//TODO: check if enough?
@@ -145,5 +144,44 @@ public class Alarm extends Service {
 	      } catch (InvocationTargetException e) {
 	        throw new RuntimeException(e);
 	      }
+	}
+	
+	private String nextAlarmMessage(Calendar nextAlarmTime)
+	{
+		long elapsed = nextAlarmTime.getTimeInMillis() - System.currentTimeMillis();
+		long dayMillis = 1000*60*60*24;
+		long elapsedDays = elapsed / dayMillis;
+		elapsed -= elapsedDays * dayMillis;
+		long hourMillis = 1000*60*60;
+		long elapsedHours = elapsed / hourMillis;
+		String message;
+		if (elapsedDays > 0)
+		{
+			message = String.format(
+					"Fake Dawn starting in %d days and %d hours.",
+					elapsedDays, elapsedHours);
+		}
+		else
+		{
+			elapsed -= elapsedHours * hourMillis;
+			long minuteMillis = 1000*60;
+			long elapsedMinutes = elapsed / minuteMillis;
+			if (elapsedHours > 0)
+			{
+				message = String.format(
+						"Fake Dawn starting in %d hours and %d minutes.",
+						elapsedHours, elapsedMinutes);
+			}
+			else
+			{
+				elapsed -= elapsedMinutes * minuteMillis;
+				long secondMillis = 1000;
+				long elapsedSeconds = elapsed / secondMillis;
+				message = String.format(
+						"Fake Dawn starting in %d minutes and %d seconds.",
+						elapsedMinutes, elapsedSeconds);
+			}
+		}
+		return message;
 	}
 }
