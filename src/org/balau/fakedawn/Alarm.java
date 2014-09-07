@@ -19,6 +19,8 @@
 
 package org.balau.fakedawn;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Calendar;
 
 import android.app.AlarmManager;
@@ -123,11 +125,25 @@ public class Alarm extends Service {
 	
 	private void set(Calendar nextAlarmTime)
 	{
-		// FIXME use setExact to schedule next alarm. Check if Method exists first.
-		this.getAlarmManager().setRepeating(
-				AlarmManager.RTC_WAKEUP, 
-				nextAlarmTime.getTimeInMillis(),
-				AlarmManager.INTERVAL_DAY,
-				this.getOpenDawnPendingIntent());
+		AlarmManager alarmManager = this.getAlarmManager();
+		PendingIntent openDawnIntent = this.getOpenDawnPendingIntent();
+    	// API 19 changed set() behaviour and added setExact
+		// https://developer.android.com/reference/android/app/AlarmManager.html#set(int, long, android.app.PendingIntent)
+		// Using setExact if it exists, otherwise fall back to set.
+	    try {
+	        Method setExact = AlarmManager.class.getDeclaredMethod(
+	            "setExact", int.class, long.class, PendingIntent.class);
+	        setExact.invoke(alarmManager, AlarmManager.RTC_WAKEUP,
+	        		nextAlarmTime.getTimeInMillis(), openDawnIntent);
+	      } catch (NoSuchMethodException e) {
+	        alarmManager.set(AlarmManager.RTC_WAKEUP,
+	        		nextAlarmTime.getTimeInMillis(), openDawnIntent);
+	      } catch (IllegalAccessException e) {
+	        throw new RuntimeException(e);
+	      } catch (IllegalArgumentException e) {
+	        throw new RuntimeException(e);
+	      } catch (InvocationTargetException e) {
+	        throw new RuntimeException(e);
+	      }
 	}
 }
