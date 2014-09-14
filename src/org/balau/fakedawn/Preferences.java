@@ -640,21 +640,38 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 	public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
 		TimeSlider lightSlider = (TimeSlider)findViewById(R.id.timeSlider1);
 		TimeSlider soundSlider = (TimeSlider)findViewById(R.id.timeSlider2);
-
+		DawnTime dt = new DawnTime(hourOfDay, minute);
+		int new_minutes = dt.getMinutes();
+		int delta_minutes = 0;
+		
 		switch(m_clickedTime)
 		{
 		case TIME_DAWN_START:
-			lightSlider.setLeftTime(hourOfDay, minute);
+			delta_minutes = new_minutes - lightSlider.getLeftTime().getMinutes(); 
 			break;
 		case TIME_DAWN_END:
-			lightSlider.setRightTime(hourOfDay, minute);
+			delta_minutes = new_minutes - lightSlider.getRightTime().getMinutes(); 
 			break;
 		case TIME_SOUND_START:
-			soundSlider.setLeftTime(hourOfDay, minute);
+			delta_minutes = new_minutes - soundSlider.getLeftTime().getMinutes(); 
 			break;
 		case TIME_SOUND_END:
-			soundSlider.setRightTime(hourOfDay, minute);
+			delta_minutes = new_minutes - soundSlider.getRightTime().getMinutes(); 
 			break;
+		}
+		if (delta_minutes > 0)
+		{
+			lightSlider.setRightTime(lightSlider.getRightTime().getMinutes() + delta_minutes);
+			soundSlider.setRightTime(soundSlider.getRightTime().getMinutes() + delta_minutes);
+			lightSlider.setLeftTime(lightSlider.getLeftTime().getMinutes() + delta_minutes);
+			soundSlider.setLeftTime(soundSlider.getLeftTime().getMinutes() + delta_minutes);
+		}
+		else if (delta_minutes < 0)
+		{
+			lightSlider.setLeftTime(lightSlider.getLeftTime().getMinutes() + delta_minutes);
+			soundSlider.setLeftTime(soundSlider.getLeftTime().getMinutes() + delta_minutes);
+			lightSlider.setRightTime(lightSlider.getRightTime().getMinutes() + delta_minutes);
+			soundSlider.setRightTime(soundSlider.getRightTime().getMinutes() + delta_minutes);
 		}
 		resizeSliders();
 	}
