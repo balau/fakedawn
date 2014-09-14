@@ -142,7 +142,7 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		updateColor(pref.getInt("color", 0x4040FF));
 
 		String sound = pref.getString("sound",
-				"android.resource://" + getPackageName() + "/" + R.raw.canggu_dawn);
+				getFallbackSoundUriString());
 		if(sound.isEmpty())
 		{
 			m_soundUri = null;
@@ -178,6 +178,10 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		m_showHelp = firstTimeVersion == "" || !firstTimeVersion.equals(version);
 
 		Log.d("FakeDawn", "Preferences loaded.");
+	}
+
+	private String getFallbackSoundUriString() {
+		return "android.resource://" + getPackageName() + "/" + R.raw.canggu_dawn;
 	}
 
 	/* (non-Javadoc)
@@ -480,7 +484,16 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 
 		if(soundViewsEnabled)
 		{
-			String soundTitle = RingtoneManager.getRingtone(this, m_soundUri).getTitle(this);	
+			
+			String soundTitle;
+			if (m_soundUri.toString().equals(getFallbackSoundUriString()))
+			{
+				soundTitle = "Canggu Dawn";
+			}
+			else
+			{
+				soundTitle = RingtoneManager.getRingtone(this, m_soundUri).getTitle(this);
+			}
 			soundButton.setText(soundTitle);
 		}
 		else
