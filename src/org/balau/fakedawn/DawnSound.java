@@ -119,8 +119,8 @@ public class DawnSound extends Service implements OnPreparedListener, OnCompleti
 				if(soundUri != null)
 				{
 					AudioManager am = (AudioManager)getSystemService(AUDIO_SERVICE);
-					int maxVolume = am.getStreamMaxVolume(AudioManager.STREAM_ALARM); 
-					int volume = intent.getIntExtra(EXTRA_SOUND_VOLUME, maxVolume/2); 
+					int maxVolume = am.getStreamMaxVolume(AudioManager.STREAM_ALARM);
+					int volume = intent.getIntExtra(EXTRA_SOUND_VOLUME, maxVolume);
 					if(volume < 0) volume = 0;
 					if(volume > maxVolume) volume = maxVolume;
 					am.setStreamVolume(AudioManager.STREAM_ALARM, volume, 0);

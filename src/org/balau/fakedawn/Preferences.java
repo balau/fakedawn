@@ -119,10 +119,10 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		DawnTime dawnStart = new DawnTime(
 				pref.getInt("dawn_start_hour", 8),
 				pref.getInt("dawn_start_minute", 0));
-		lightSlider.setLeftTime(dawnStart.getMinutes() + pref.getInt("light_start", 0)); 
-		lightSlider.setRightTime(dawnStart.getMinutes() + pref.getInt("light_max", 0)); 
-		soundSlider.setLeftTime(dawnStart.getMinutes() + pref.getInt("sound_start", 0)); 
-		soundSlider.setRightTime(dawnStart.getMinutes() + pref.getInt("sound_max", 0)); 
+		lightSlider.setLeftTime(dawnStart.getMinutes() + pref.getInt("light_start", 0));
+		lightSlider.setRightTime(dawnStart.getMinutes() + pref.getInt("light_max", 15));
+		soundSlider.setLeftTime(dawnStart.getMinutes() + pref.getInt("sound_start", 15));
+		soundSlider.setRightTime(dawnStart.getMinutes() + pref.getInt("sound_max", 30));
 
 		cb = (CheckBox) findViewById(R.id.checkBoxMondays);
 		cb.setChecked(pref.getBoolean("mondays", true));
@@ -135,13 +135,14 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		cb = (CheckBox) findViewById(R.id.checkBoxFridays);
 		cb.setChecked(pref.getBoolean("fridays", true));
 		cb = (CheckBox) findViewById(R.id.checkBoxSaturdays);
-		cb.setChecked(pref.getBoolean("saturdays", false));
+		cb.setChecked(pref.getBoolean("saturdays", true));
 		cb = (CheckBox) findViewById(R.id.checkBoxSundays);
-		cb.setChecked(pref.getBoolean("sundays", false));
+		cb.setChecked(pref.getBoolean("sundays", true));
 
 		updateColor(pref.getInt("color", 0x4040FF));
 
-		String sound = pref.getString("sound", "");
+		String sound = pref.getString("sound",
+				"android.resource://" + getPackageName() + "/" + R.raw.canggu_dawn);
 		if(sound.isEmpty())
 		{
 			m_soundUri = null;
@@ -154,7 +155,7 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		AudioManager am = (AudioManager)getSystemService(AUDIO_SERVICE);
 		int maxVolume = am.getStreamMaxVolume(AudioManager.STREAM_ALARM);
 		seekBarVolume.setMax(maxVolume);
-		int volume = pref.getInt("volume", maxVolume/2);
+		int volume = pref.getInt("volume", maxVolume);
 		if(volume < 0) volume = 0;
 		if(volume > maxVolume) volume = maxVolume;
 		seekBarVolume.setProgress(volume);
