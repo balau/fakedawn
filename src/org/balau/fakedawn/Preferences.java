@@ -40,7 +40,6 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
-import android.media.MediaPlayer.OnPreparedListener;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -550,17 +549,14 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		m_preview.stop();
 	}
 
-	private class VolumePreview implements OnPreparedListener, OnCompletionListener, OnErrorListener {
+	private class VolumePreview implements OnCompletionListener, OnErrorListener {
 
 		/**
 		 * 
 		 */
 		public VolumePreview() {
 			m_player.setOnErrorListener(this);
-			m_player.setOnPreparedListener(this);
 			m_player.setOnCompletionListener(this);
-			m_player.reset();
-			m_player.setAudioStreamType(AudioManager.STREAM_ALARM);
 		}
 
 		private MediaPlayer m_player = new MediaPlayer();
@@ -568,6 +564,7 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 
 		public void setSoundUri(Context context, Uri soundUri) {
 			m_player.reset();
+			m_player.setAudioStreamType(AudioManager.STREAM_ALARM);
 			if(soundUri != null)
 			{
 				try {
@@ -575,12 +572,16 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 					m_playerReady = true;
 				} catch (IllegalArgumentException e) {
 					e.printStackTrace();
+					Log.e("FakeDawn", "setSoundUri", e);
 				} catch (SecurityException e) {
 					e.printStackTrace();
+					Log.e("FakeDawn", "setSoundUri", e);
 				} catch (IllegalStateException e) {
 					e.printStackTrace();
+					Log.e("FakeDawn", "setSoundUri", e);
 				} catch (IOException e) {
 					e.printStackTrace();
+					Log.e("FakeDawn", "setSoundUri", e);
 				}
 			}
 		}
@@ -596,37 +597,44 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 			}
 		}
 
-		@Override
-		public void onPrepared(MediaPlayer mp) {
-			m_player.start();
-		}
-
 		public void previewVolume(int volume)
 		{
 			if(m_playerReady)
 			{
-				if(!m_player.isPlaying())
-				{
-					m_player.prepareAsync();
+				try {
+					if(!m_player.isPlaying())
+					{
+						m_player.prepare();
+						m_player.start();
+					}
+					AudioManager am = (AudioManager)getSystemService(AUDIO_SERVICE);
+					int maxVolume = am.getStreamMaxVolume(AudioManager.STREAM_ALARM);
+					if(volume < 0) volume = 0;
+					if(volume > maxVolume) volume = maxVolume;
+					am.setStreamVolume(AudioManager.STREAM_ALARM, volume, 0);
+				} catch (IllegalStateException e) {
+					e.printStackTrace();
+					Log.e("FakeDawn", "previewVolume", e);
+					m_playerReady = false;
+				} catch (IOException e) {
+					e.printStackTrace();
+					Log.e("FakeDawn", "previewVolume", e);
+					m_playerReady = false;
 				}
-				AudioManager am = (AudioManager)getSystemService(AUDIO_SERVICE);
-				int maxVolume = am.getStreamMaxVolume(AudioManager.STREAM_ALARM);
-				if(volume < 0) volume = 0;
-				if(volume > maxVolume) volume = maxVolume;
-				am.setStreamVolume(AudioManager.STREAM_ALARM, volume, 0);
 			}
 		}
 
 		@Override
 		public boolean onError(MediaPlayer mp, int what, int extra) {
-			m_player.reset();
+			Log.e("FakeDawn", String.format("MediaPlayer error. what: %d, extra: %d", what, extra));
+			mp.reset();
 			m_playerReady = false;
 			return true;
 		}
 
 		@Override
 		public void onCompletion(MediaPlayer mp) {
-			m_player.stop();
+			mp.stop();
 		}
 
 	}
