@@ -101,8 +101,8 @@ public class DawnSound extends Service implements OnPreparedListener, OnCompleti
 			m_player.setOnPreparedListener(this);
 			m_player.setOnCompletionListener(this);
 			m_player.setOnErrorListener(this);
-			m_player.setAudioStreamType(AudioManager.STREAM_ALARM);
 			m_player.reset();
+			m_player.setAudioStreamType(AudioManager.STREAM_ALARM);
 
 			m_soundStartMillis = intent.getLongExtra(EXTRA_SOUND_START_MILLIS, 0);
 			m_soundEndMillis = intent.getLongExtra(EXTRA_SOUND_END_MILLIS, 0);
