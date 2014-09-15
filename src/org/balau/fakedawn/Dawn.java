@@ -45,6 +45,7 @@ public class Dawn extends Activity implements OnClickListener {
 	private Timer m_timer;
 
 	private int m_dawnColor;
+	private boolean m_ending;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -92,23 +93,9 @@ public class Dawn extends Activity implements OnClickListener {
 
 		updateBrightness(System.currentTimeMillis());
 
-		m_timer = new Timer();
-		m_timer.schedule(
-				new TimerTask() {
-
-					@Override
-					public void run() {
-						runOnUiThread(
-								new Runnable() {
-									public void run() {
-										updateBrightness(System.currentTimeMillis());
-									}
-								});
-					}
-				}, TIMER_TICK_SECONDS*1000, TIMER_TICK_SECONDS*1000);
 	}
 
-	private void stopDawn()
+	private void endDawn()
 	{
 		Context appContext = getApplicationContext();
 		Intent sound = new Intent(appContext, DawnSound.class);
@@ -116,7 +103,7 @@ public class Dawn extends Activity implements OnClickListener {
 		Intent stopAlarm = new Intent(appContext, AlarmReceiver.class);
 		stopAlarm.setAction(AlarmReceiver.ACTION_STOP_ALARM);
 		appContext.sendBroadcast(stopAlarm);
-		this.finish();
+		m_ending = true;
 	}
 
 	/* (non-Javadoc)
@@ -124,12 +111,14 @@ public class Dawn extends Activity implements OnClickListener {
 	 */
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		stopDawn();
+		endDawn();
+		this.finish();
 		return super.onKeyDown(keyCode, event);
 	}
 
 	public void onClick(View v) {
-		stopDawn();
+		endDawn();
+		this.finish();
 	}
 
 	private int getColor(int rgb, int percent)
@@ -175,6 +164,30 @@ public class Dawn extends Activity implements OnClickListener {
 		rgb = COLOR_OPAQUE | getColor(m_dawnColor, (int)level_percent);
 		findViewById(R.id.dawn_background).setBackgroundColor(rgb);
 	}
+	
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onStart()
+	 */
+	@Override
+	protected void onStart() {
+		super.onStart();
+		updateBrightness(System.currentTimeMillis());
+		m_timer = new Timer();
+		m_timer.schedule(
+				new TimerTask() {
+
+					@Override
+					public void run() {
+						runOnUiThread(
+								new Runnable() {
+									public void run() {
+										updateBrightness(System.currentTimeMillis());
+									}
+								});
+					}
+				}, TIMER_TICK_SECONDS*1000, TIMER_TICK_SECONDS*1000);
+
+	}
 
 	/* (non-Javadoc)
 	 * @see android.app.Activity#onStop()
@@ -183,7 +196,24 @@ public class Dawn extends Activity implements OnClickListener {
 	protected void onStop() {
 		super.onStop();
 		m_timer.cancel();
-		Log.d("FakeDawn", "Dawn Stopped.");
+	}
+
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onPause()
+	 */
+	@Override
+	protected void onPause() {
+		super.onPause();
+		// TODO Signal to service potential end.
+	}
+
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onResume()
+	 */
+	@Override
+	protected void onResume() {
+		super.onResume();
+		// TODO Signal to service Dawn is on, cancel potential end.
 	}
 
 	/* (non-Javadoc)
@@ -193,6 +223,18 @@ public class Dawn extends Activity implements OnClickListener {
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		outState.putLong(ALARM_START_MILLIS, m_alarmStartMillis);
+	}
+
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onDestroy()
+	 */
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		if (!m_ending)
+		{
+			endDawn();
+		}
 	}
 
 }
