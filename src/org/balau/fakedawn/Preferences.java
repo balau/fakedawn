@@ -667,8 +667,11 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 			delta_minutes = new_minutes - soundSlider.getRightTime().getMinutes(); 
 			break;
 		}
+		// We need to distinguish the direction, because a marker can't be set to surpass the other.
+		// Left marker must stay left, right marker must stay right.
 		if (delta_minutes > 0)
 		{
+			// We shift everything to the right, so we move first the right markers, then the left ones.
 			lightSlider.setRightTime(lightSlider.getRightTime().getMinutes() + delta_minutes);
 			soundSlider.setRightTime(soundSlider.getRightTime().getMinutes() + delta_minutes);
 			lightSlider.setLeftTime(lightSlider.getLeftTime().getMinutes() + delta_minutes);
@@ -676,6 +679,7 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		}
 		else if (delta_minutes < 0)
 		{
+			// We shift everything to the left, so we move first the left markers, then the right ones.
 			lightSlider.setLeftTime(lightSlider.getLeftTime().getMinutes() + delta_minutes);
 			soundSlider.setLeftTime(soundSlider.getLeftTime().getMinutes() + delta_minutes);
 			lightSlider.setRightTime(lightSlider.getRightTime().getMinutes() + delta_minutes);
