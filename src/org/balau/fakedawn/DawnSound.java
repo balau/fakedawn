@@ -46,6 +46,10 @@ public class DawnSound extends Service implements OnPreparedListener, OnCompleti
 	public static final String EXTRA_SOUND_END_MILLIS = "org.balau.fakedawn.DawnSound.EXTRA_SOUND_END_MILLIS";
 	public static final String EXTRA_SOUND_VOLUME = "org.balau.fakedawn.DawnSound.EXTRA_SOUND_VOLUME";
 	public static final String EXTRA_VIBRATE = "org.balau.fakedawn.DawnSound.EXTRA_VIBRATE";
+	public static final String EXTRA_INTENT_TYPE = "org.balau.fakedawn.DawnSound.EXTRA_INTENT_TYPE";
+	public static final String EXTRA_INTENT_TYPE_START = "org.balau.fakedawn.DawnSound.EXTRA_INTENT_TYPE_START";
+	public static final String EXTRA_INTENT_TYPE_INACTIVE = "org.balau.fakedawn.DawnSound.EXTRA_INTENT_TYPE_INACTIVE";
+	public static final String EXTRA_INTENT_TYPE_ACTIVE = "org.balau.fakedawn.DawnSound.EXTRA_INTENT_TYPE_ACTIVE";
 
 	private static int TIMER_TICK_SECONDS = 10;
 
@@ -95,6 +99,18 @@ public class DawnSound extends Service implements OnPreparedListener, OnCompleti
 	 */
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
+		String intentType;
+		int result = Service.START_REDELIVER_INTENT;
+		
+		intentType = intent.getStringExtra(EXTRA_INTENT_TYPE);
+		if (intentType.equals(EXTRA_INTENT_TYPE_START))
+		{
+			result = onIntentStart(intent, flags, startId);
+		}
+		return result;
+	}
+
+	private int onIntentStart(Intent intent, int flags, int startId) {
 
 		if(!m_soundInitialized)
 		{

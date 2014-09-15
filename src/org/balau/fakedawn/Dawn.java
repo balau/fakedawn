@@ -81,6 +81,7 @@ public class Dawn extends Activity implements OnClickListener {
 
 		m_dawnColor = pref.getInt("color", 0x4040FF);
 		Intent sound = new Intent(getApplicationContext(), DawnSound.class);
+		sound.putExtra(DawnSound.EXTRA_INTENT_TYPE, DawnSound.EXTRA_INTENT_TYPE_START);
 		sound.putExtra(DawnSound.EXTRA_VIBRATE, pref.getBoolean("vibrate", false));
 		long soundStart = dawnStartMillis + (pref.getInt("sound_start", 15)*1000L*60L);
 		long soundEnd = dawnStartMillis + (pref.getInt("sound_max", 15)*1000L*60L);
@@ -88,7 +89,9 @@ public class Dawn extends Activity implements OnClickListener {
 		sound.putExtra(DawnSound.EXTRA_SOUND_END_MILLIS, soundEnd);
 		sound.putExtra(DawnSound.EXTRA_SOUND_URI, pref.getString("sound", ""));
 		if(pref.contains("volume"))
-			sound.putExtra(DawnSound.EXTRA_SOUND_VOLUME, pref.getInt("volume", 0));			
+		{
+			sound.putExtra(DawnSound.EXTRA_SOUND_VOLUME, pref.getInt("volume", 0));
+		}
 		startService(sound);
 
 		updateBrightness(System.currentTimeMillis());
