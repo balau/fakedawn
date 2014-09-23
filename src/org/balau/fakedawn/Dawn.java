@@ -207,7 +207,9 @@ public class Dawn extends Activity implements OnClickListener {
 	@Override
 	protected void onPause() {
 		super.onPause();
-		// TODO Signal to service potential end.
+		Intent sound = new Intent(getApplicationContext(), DawnSound.class);
+		sound.putExtra(DawnSound.EXTRA_INTENT_TYPE, DawnSound.EXTRA_INTENT_TYPE_INACTIVE);
+		startService(sound);
 	}
 
 	/* (non-Javadoc)
@@ -216,7 +218,9 @@ public class Dawn extends Activity implements OnClickListener {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		// TODO Signal to service Dawn is on, cancel potential end.
+		Intent sound = new Intent(getApplicationContext(), DawnSound.class);
+		sound.putExtra(DawnSound.EXTRA_INTENT_TYPE, DawnSound.EXTRA_INTENT_TYPE_ACTIVE);
+		startService(sound);
 	}
 
 	/* (non-Javadoc)
