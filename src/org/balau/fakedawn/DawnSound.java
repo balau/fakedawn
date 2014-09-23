@@ -52,8 +52,10 @@ public class DawnSound extends Service implements OnPreparedListener, OnCompleti
 	public static final String EXTRA_INTENT_TYPE_ACTIVE = "org.balau.fakedawn.DawnSound.EXTRA_INTENT_TYPE_ACTIVE";
 
 	private static int TIMER_TICK_SECONDS = 10;
+	private static final long TIMEOUT_INACTIVE_MILLIS = 1000*10;
 
 	private Timer m_timer = null;
+	private Timer m_inactiveTimer = null;
 	private long m_soundStartMillis;
 	private long m_soundEndMillis;
 	private MediaPlayer m_player = new MediaPlayer();
@@ -107,7 +109,47 @@ public class DawnSound extends Service implements OnPreparedListener, OnCompleti
 		{
 			result = onIntentStart(intent, flags, startId);
 		}
+		else if(intentType.equals(EXTRA_INTENT_TYPE_ACTIVE))
+		{
+			result = onIntentActive(intent, flags, startId);
+		}
+		else if(intentType.equals(EXTRA_INTENT_TYPE_INACTIVE))
+		{
+			result = onIntentInactive(intent, flags, startId);
+		}
+		else
+		{
+			Log.e("FakeDawn", String.format("DawnSound received intent with unknown type '%s'", intentType));
+		}
 		return result;
+	}
+
+	private int onIntentInactive(Intent intent, int flags, int startId) {
+		if (m_inactiveTimer != null)
+		{
+			m_inactiveTimer.cancel();
+			m_inactiveTimer = null;
+		}
+		m_inactiveTimer = new Timer();
+		m_inactiveTimer.schedule(new TimerTask() {
+			
+			@Override
+			public void run() {
+				stopSelf();
+			}
+		}, TIMEOUT_INACTIVE_MILLIS);
+		Log.d("FakeDawn", "Dawn is inactive, setting timeout to stop sound...");
+		return START_STICKY; //TODO: check for problems when start intent is sent, then inactive is sent and then service is killed.
+	}
+
+	private int onIntentActive(Intent intent, int flags, int startId) {
+		if (m_inactiveTimer != null)
+		{
+			m_inactiveTimer.cancel();
+			m_inactiveTimer = null;
+			Log.d("FakeDawn", "Dawn is now active, cancelling timeout.");
+		}
+		return START_STICKY;  //TODO: check for problems when start intent is sent, then active is sent and then service is killed.
 	}
 
 	private int onIntentStart(Intent intent, int flags, int startId) {
