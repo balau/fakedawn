@@ -39,7 +39,7 @@ import android.util.Log;
  * @author francesco
  *
  */
-public class DawnSound extends Service implements OnPreparedListener, OnCompletionListener, OnErrorListener {
+public class DawnSound extends Service implements OnCompletionListener, OnErrorListener {
 
 	public static final String EXTRA_SOUND_URI = "org.balau.fakedawn.DawnSound.EXTRA_SOUND_URI";
 	public static final String EXTRA_SOUND_START_MILLIS = "org.balau.fakedawn.DawnSound.EXTRA_SOUND_START_MILLIS";
@@ -51,8 +51,8 @@ public class DawnSound extends Service implements OnPreparedListener, OnCompleti
 	public static final String EXTRA_INTENT_TYPE_INACTIVE = "org.balau.fakedawn.DawnSound.EXTRA_INTENT_TYPE_INACTIVE";
 	public static final String EXTRA_INTENT_TYPE_ACTIVE = "org.balau.fakedawn.DawnSound.EXTRA_INTENT_TYPE_ACTIVE";
 
-	private static int TIMER_TICK_SECONDS = 10;
-	private static final long TIMEOUT_INACTIVE_MILLIS = 1000*10;
+	private static final int TIMER_VOLUME_UPDATE_MILLIS = 10*1000;
+	private static final long TIMEOUT_INACTIVE_MILLIS = 10*1000;
 
 	private Timer m_timer = null;
 	private Timer m_inactiveTimer = null;
@@ -88,7 +88,9 @@ public class DawnSound extends Service implements OnPreparedListener, OnCompleti
 			}
 		}
 		if(m_timer != null)
+		{
 			m_timer.cancel();
+		}
 		if(m_vibrate)
 		{
 			m_vibrate = false;
@@ -156,7 +158,6 @@ public class DawnSound extends Service implements OnPreparedListener, OnCompleti
 
 		if(!m_soundInitialized)
 		{
-			m_player.setOnPreparedListener(this);
 			m_player.setOnCompletionListener(this);
 			m_player.setOnErrorListener(this);
 			m_player.reset();
@@ -184,6 +185,8 @@ public class DawnSound extends Service implements OnPreparedListener, OnCompleti
 					am.setStreamVolume(AudioManager.STREAM_ALARM, volume, 0);
 					try {
 						m_player.setDataSource(this, soundUri);
+						m_player.prepare();
+						m_player.setLooping(true);
 						m_soundInitialized = true;
 					} catch (IllegalArgumentException e) {
 						e.printStackTrace();
@@ -196,36 +199,40 @@ public class DawnSound extends Service implements OnPreparedListener, OnCompleti
 					}
 				}
 
-				m_vibrate = intent.getBooleanExtra(EXTRA_VIBRATE, false);
-				if(m_vibrate)
+				if(m_soundInitialized)
 				{
-					m_vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-					if(m_vibrator == null)
+					m_vibrate = intent.getBooleanExtra(EXTRA_VIBRATE, false);
+					if(m_vibrate)
 					{
-						m_vibrate = false;
+						m_vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+						if(m_vibrator == null)
+						{
+							m_vibrate = false;
+						}
 					}
-				}
 
-				m_timer = new Timer();
-				m_timer.schedule(
-						new TimerTask() {
+					m_timer = new Timer();
+					m_timer.schedule(
+							new TimerTask() {
 
-							@Override
-							public void run() {
-								if(m_soundInitialized)
-								{
-									if(!m_player.isPlaying())
+								@Override
+								public void run() {
+									if(m_soundInitialized)
 									{
-										m_player.prepareAsync();
+										updateVolume(System.currentTimeMillis());
+										if(!m_player.isPlaying())
+										{
+											m_player.start();
+										}
+										if(m_vibrate)
+										{
+											m_vibrator.vibrate(m_vibratePattern, 0);
+										}
 									}
 								}
-								if(m_vibrate)
-								{
-									m_vibrator.vibrate(m_vibratePattern, 0);
-								}
-							}
-						}, new Date(m_soundStartMillis));
-				Log.d("FakeDawn", "Sound scheduled.");
+							}, new Date(m_soundStartMillis), TIMER_VOLUME_UPDATE_MILLIS);
+					Log.d("FakeDawn", "Sound scheduled.");
+				}
 			}
 		}
 		return START_REDELIVER_INTENT;
@@ -254,41 +261,31 @@ public class DawnSound extends Service implements OnPreparedListener, OnCompleti
 		}
 		m_player.setVolume(volume, volume);
 	}
-	
-	@Override
-	public void onPrepared(MediaPlayer mp) {
-		m_player.setLooping(true);
-		updateVolume(System.currentTimeMillis());
-		m_player.start();
-		m_timer = new Timer();
-		m_timer.schedule(
-				new TimerTask() {
-
-					@Override
-					public void run() {
-						if(m_player.isPlaying())
-						{
-							updateVolume(System.currentTimeMillis());
-						}
-						else
-						{
-							m_timer.cancel();
-						}
-					}
-				}, TIMER_TICK_SECONDS*1000, TIMER_TICK_SECONDS*1000);
-	}
 
 	@Override
 	public boolean onError(MediaPlayer mp, int what, int extra) {
 		Log.e("FakeDawn", String.format("MediaPlayer error. what: %d, extra: %d", what, extra));
 		m_player.reset();
+		if(m_timer != null)
+		{
+			m_timer.cancel();
+		}
 		m_soundInitialized = false;
+		stopSelf();
 		return true;
 	}
 
 	@Override
 	public void onCompletion(MediaPlayer mp) {
 		Log.w("FakeDawn", "Sound completed even if looping.");
-		m_player.stop();
+		try {
+			mp.prepare();
+		} catch (IllegalStateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}	
 }
