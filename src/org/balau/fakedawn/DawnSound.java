@@ -54,7 +54,7 @@ public class DawnSound extends Service implements OnCompletionListener, OnErrorL
 	private static final int TIMER_VOLUME_UPDATE_MILLIS = 10*1000;
 	private static final long TIMEOUT_INACTIVE_MILLIS = 10*1000;
 
-	private Timer m_timer = null;
+	private Timer m_volumeUpdateTimer = null;
 	private Timer m_inactiveTimer = null;
 	private long m_soundStartMillis;
 	private long m_soundEndMillis;
@@ -89,9 +89,9 @@ public class DawnSound extends Service implements OnCompletionListener, OnErrorL
 				m_player.stop();
 			}
 		}
-		if(m_timer != null)
+		if(m_volumeUpdateTimer != null)
 		{
-			m_timer.cancel();
+			m_volumeUpdateTimer.cancel();
 		}
 		if(m_vibrate)
 		{
@@ -219,8 +219,8 @@ public class DawnSound extends Service implements OnCompletionListener, OnErrorL
 					}
 				}
 
-				m_timer = new Timer();
-				m_timer.schedule(
+				m_volumeUpdateTimer = new Timer();
+				m_volumeUpdateTimer.schedule(
 						new TimerTask() {
 
 							@Override
@@ -273,9 +273,9 @@ public class DawnSound extends Service implements OnCompletionListener, OnErrorL
 	public boolean onError(MediaPlayer mp, int what, int extra) {
 		Log.e("FakeDawn", String.format("MediaPlayer error. what: %d, extra: %d", what, extra));
 		m_player.reset();
-		if(m_timer != null)
+		if(m_volumeUpdateTimer != null)
 		{
-			m_timer.cancel();
+			m_volumeUpdateTimer.cancel();
 		}
 		m_soundInitialized = false;
 		stopSelf();
