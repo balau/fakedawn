@@ -60,6 +60,8 @@ public class DawnSound extends Service implements OnCompletionListener, OnErrorL
 	private long m_soundEndMillis;
 	private MediaPlayer m_player = new MediaPlayer();
 	private boolean m_soundInitialized = false;
+	private int m_volume;
+	private Uri m_soundUri;
 
 	private Vibrator m_vibrator = null;
 	private boolean m_vibrate = false;
@@ -154,6 +156,27 @@ public class DawnSound extends Service implements OnCompletionListener, OnErrorL
 		return START_STICKY;  //TODO: check for problems when start intent is sent, then active is sent and then service is killed.
 	}
 
+	private void configure(Intent intent)
+	{
+		m_soundStartMillis = intent.getLongExtra(EXTRA_SOUND_START_MILLIS, 0);
+		m_soundEndMillis = intent.getLongExtra(EXTRA_SOUND_END_MILLIS, 0);
+		m_vibrate = intent.getBooleanExtra(EXTRA_VIBRATE, false);
+		AudioManager am = (AudioManager)getSystemService(AUDIO_SERVICE);
+		int maxVolume = am.getStreamMaxVolume(AudioManager.STREAM_ALARM);
+		m_volume = intent.getIntExtra(EXTRA_SOUND_VOLUME, maxVolume);
+		if(m_volume < 0) m_volume = 0;
+		if(m_volume > maxVolume) m_volume = maxVolume;
+		String sound = intent.getStringExtra(EXTRA_SOUND_URI);
+		if (sound.equals(""))
+		{
+			m_soundUri = null;
+		}
+		else
+		{
+			m_soundUri = Uri.parse(sound);
+		}
+	}
+	
 	private int onIntentStart(Intent intent, int flags, int startId) {
 
 		if(!m_soundInitialized)
@@ -163,76 +186,60 @@ public class DawnSound extends Service implements OnCompletionListener, OnErrorL
 			m_player.reset();
 			m_player.setAudioStreamType(AudioManager.STREAM_ALARM);
 
-			m_soundStartMillis = intent.getLongExtra(EXTRA_SOUND_START_MILLIS, 0);
-			m_soundEndMillis = intent.getLongExtra(EXTRA_SOUND_END_MILLIS, 0);
-
-			String sound = intent.getStringExtra(EXTRA_SOUND_URI);
-			if(sound.isEmpty())
+			configure(intent);
+			if(m_soundUri != null)
 			{
-				Log.d("FakeDawn", "Silent.");
+				int volume = m_volume;
+				AudioManager am = (AudioManager)getSystemService(AUDIO_SERVICE);
+				am.setStreamVolume(AudioManager.STREAM_ALARM, volume, 0);
+				try {
+					m_player.setDataSource(this, m_soundUri);
+					m_player.prepare();
+					m_player.setLooping(true);
+					m_soundInitialized = true;
+				} catch (IllegalArgumentException e) {
+					e.printStackTrace();
+				} catch (SecurityException e) {
+					e.printStackTrace();
+				} catch (IllegalStateException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
-			else
-			{
-				Uri soundUri = Uri.parse(sound);
 
-				if(soundUri != null)
+			if(m_soundInitialized)
+			{
+				if(m_vibrate)
 				{
-					AudioManager am = (AudioManager)getSystemService(AUDIO_SERVICE);
-					int maxVolume = am.getStreamMaxVolume(AudioManager.STREAM_ALARM);
-					int volume = intent.getIntExtra(EXTRA_SOUND_VOLUME, maxVolume);
-					if(volume < 0) volume = 0;
-					if(volume > maxVolume) volume = maxVolume;
-					am.setStreamVolume(AudioManager.STREAM_ALARM, volume, 0);
-					try {
-						m_player.setDataSource(this, soundUri);
-						m_player.prepare();
-						m_player.setLooping(true);
-						m_soundInitialized = true;
-					} catch (IllegalArgumentException e) {
-						e.printStackTrace();
-					} catch (SecurityException e) {
-						e.printStackTrace();
-					} catch (IllegalStateException e) {
-						e.printStackTrace();
-					} catch (IOException e) {
-						e.printStackTrace();
+					m_vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+					if(m_vibrator == null)
+					{
+						m_vibrate = false;
 					}
 				}
 
-				if(m_soundInitialized)
-				{
-					m_vibrate = intent.getBooleanExtra(EXTRA_VIBRATE, false);
-					if(m_vibrate)
-					{
-						m_vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-						if(m_vibrator == null)
-						{
-							m_vibrate = false;
-						}
-					}
+				m_timer = new Timer();
+				m_timer.schedule(
+						new TimerTask() {
 
-					m_timer = new Timer();
-					m_timer.schedule(
-							new TimerTask() {
-
-								@Override
-								public void run() {
-									if(m_soundInitialized)
+							@Override
+							public void run() {
+								if(m_soundInitialized)
+								{
+									updateVolume(System.currentTimeMillis());
+									if(!m_player.isPlaying())
 									{
-										updateVolume(System.currentTimeMillis());
-										if(!m_player.isPlaying())
-										{
-											m_player.start();
-										}
-										if(m_vibrate)
-										{
-											m_vibrator.vibrate(m_vibratePattern, 0);
-										}
+										m_player.start();
+									}
+									if(m_vibrate)
+									{
+										m_vibrator.vibrate(m_vibratePattern, 0);
 									}
 								}
-							}, new Date(m_soundStartMillis), TIMER_VOLUME_UPDATE_MILLIS);
-					Log.d("FakeDawn", "Sound scheduled.");
-				}
+							}
+						}, new Date(m_soundStartMillis), TIMER_VOLUME_UPDATE_MILLIS);
+				Log.d("FakeDawn", "Sound scheduled.");
 			}
 		}
 		return START_REDELIVER_INTENT;
