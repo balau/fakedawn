@@ -54,7 +54,7 @@ public class DawnSound extends Service implements OnCompletionListener, OnErrorL
 	private static final int TIMER_VOLUME_UPDATE_MILLIS = 10*1000;
 	private static final long TIMEOUT_INACTIVE_MILLIS = 10*1000;
 
-	private Timer m_volumeUpdateTimer = null;
+	private Timer m_volumeUpdateTimer = null; //TODO: use Handler instead of Timer?
 	private Timer m_inactiveTimer = null;
 	private long m_soundStartMillis;
 	private long m_soundEndMillis;
@@ -92,6 +92,12 @@ public class DawnSound extends Service implements OnCompletionListener, OnErrorL
 		if(m_volumeUpdateTimer != null)
 		{
 			m_volumeUpdateTimer.cancel();
+			m_volumeUpdateTimer = null;
+		}
+		if(m_volumeUpdateTimer != null)
+		{
+			m_volumeUpdateTimer.cancel();
+			m_volumeUpdateTimer = null;
 		}
 		if(m_vibrate)
 		{
@@ -181,6 +187,7 @@ public class DawnSound extends Service implements OnCompletionListener, OnErrorL
 
 		if(!m_soundInitialized)
 		{
+			//TODO: move in onCreate
 			m_player.setOnCompletionListener(this);
 			m_player.setOnErrorListener(this);
 			m_player.reset();
@@ -192,6 +199,7 @@ public class DawnSound extends Service implements OnCompletionListener, OnErrorL
 				int volume = m_volume;
 				AudioManager am = (AudioManager)getSystemService(AUDIO_SERVICE);
 				am.setStreamVolume(AudioManager.STREAM_ALARM, volume, 0);
+				//TODO: move in common function that prepares MediaPlayer
 				try {
 					m_player.setDataSource(this, m_soundUri);
 					m_player.prepare();
@@ -272,12 +280,13 @@ public class DawnSound extends Service implements OnCompletionListener, OnErrorL
 	@Override
 	public boolean onError(MediaPlayer mp, int what, int extra) {
 		Log.e("FakeDawn", String.format("MediaPlayer error. what: %d, extra: %d", what, extra));
-		m_player.reset();
+		m_soundInitialized = false;
+		mp.reset();
 		if(m_volumeUpdateTimer != null)
 		{
 			m_volumeUpdateTimer.cancel();
+			m_volumeUpdateTimer = null;
 		}
-		m_soundInitialized = false;
 		stopSelf();
 		return true;
 	}
@@ -285,14 +294,13 @@ public class DawnSound extends Service implements OnCompletionListener, OnErrorL
 	@Override
 	public void onCompletion(MediaPlayer mp) {
 		Log.w("FakeDawn", "Sound completed even if looping.");
+		//TODO: move in common function that prepares MediaPlayer
 		try {
 			mp.prepare();
 		} catch (IllegalStateException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Log.e("FakeDawn", "onCompletion prepare", e);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Log.e("FakeDawn", "onCompletion prepare", e);
 		}
 	}	
 }
