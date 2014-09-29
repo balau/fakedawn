@@ -43,6 +43,7 @@ import android.media.MediaPlayer.OnErrorListener;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -50,9 +51,9 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.SeekBar;
-import android.widget.ToggleButton;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TimePicker;
+import android.widget.ToggleButton;
 
 /**
  * @author francesco
@@ -74,13 +75,20 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 	private int m_dawnColor;
 	private int m_clickedTime;
 
-	private Timer m_resizeSlidersScheduler = null;
+	private Handler m_sliderResizerHandler = new Handler();
+	private Runnable m_sliderResizer = new Runnable() {
+		
+		@Override
+		public void run() {
+			resizeSliders();
+		}
+	};
 	private static final int RESIZE_SLIDERS_DELAY_MILLIS = 1000;
 	private static final int SLIDERS_PADDING_MINUTES = 10;
 
 	private boolean m_showHelp = false;
 	private HelpListener m_helpListener = new HelpListener();
-	
+
 	/* (non-Javadoc)
 	 * @see android.app.Activity#onCreate(android.os.Bundle)
 	 */
@@ -165,7 +173,7 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		updateSoundViews();
 
 		resizeSliders();
-		
+
 		String firstTimeVersion = pref.getString("first_time_version", "");
 		String version = "";
 		try {
@@ -208,12 +216,12 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		builder.setMessage(message);
 		builder.create().show();
 	}
-	
+
 	private class HelpListener implements DialogInterface.OnClickListener {
 
 		@Override
 		public void onClick(DialogInterface dialog, int which) {
-			
+
 			SharedPreferences pref = getApplicationContext().getSharedPreferences("main", MODE_PRIVATE);
 			String version = "";
 			try {
@@ -224,7 +232,7 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 			SharedPreferences.Editor editor = pref.edit();
 			editor.putString("first_time_version", version);
 			editor.commit();
-			
+
 			switch(which)
 			{
 			case DialogInterface.BUTTON_POSITIVE:
@@ -236,9 +244,9 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 				break;
 			}
 		}
-		
+
 	}
-	
+
 	private void resizeSliders()
 	{
 		TimeSlider lightSlider = (TimeSlider)findViewById(R.id.timeSlider1);
@@ -483,7 +491,7 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 
 		if(soundViewsEnabled)
 		{
-			
+
 			String soundTitle;
 			if (m_soundUri.toString().equals(getFallbackSoundUriString()))
 			{
@@ -547,6 +555,7 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 	protected void onStop() {
 		super.onStop();
 		m_preview.stop();
+		m_sliderResizerHandler.removeCallbacks(m_sliderResizer);
 	}
 
 	private class VolumePreview implements OnCompletionListener, OnErrorListener {
@@ -651,7 +660,7 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		DawnTime dt = new DawnTime(hourOfDay, minute);
 		int new_minutes = dt.getMinutes();
 		int delta_minutes = 0;
-		
+
 		switch(m_clickedTime)
 		{
 		case TIME_DAWN_START:
@@ -690,25 +699,9 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 
 	@Override
 	public void onTimesChanged(TimeSlider s) {
-		if(m_resizeSlidersScheduler != null)
-		{
-			m_resizeSlidersScheduler.cancel();
-		}
-		m_resizeSlidersScheduler = new Timer();
-		m_resizeSlidersScheduler.schedule(
-				new TimerTask() {
-
-					@Override
-					public void run() {
-						runOnUiThread(
-								new Runnable() {
-									public void run() {
-										resizeSliders();
-										m_resizeSlidersScheduler = null;
-									}
-								});
-					}
-				}, RESIZE_SLIDERS_DELAY_MILLIS);	}
+		m_sliderResizerHandler.removeCallbacks(m_sliderResizer);
+		m_sliderResizerHandler.postDelayed(m_sliderResizer, RESIZE_SLIDERS_DELAY_MILLIS);
+	}
 
 	/* (non-Javadoc)
 	 * @see android.app.Activity#onKeyDown(int, android.view.KeyEvent)
