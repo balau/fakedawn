@@ -231,6 +231,11 @@ public class DawnSound extends Service implements OnCompletionListener, OnErrorL
 					{
 						m_vibrate = false;
 					}
+					else
+					{
+						//TODO: check hasVibrator with reflection.
+						//m_vibrate = m_vibrator.hasVibrator();
+					}
 				}
 				long delay = Calendar.getInstance().getTimeInMillis() - m_soundStartMillis;
 				if (delay < 0) {
