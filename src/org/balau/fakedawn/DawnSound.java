@@ -19,6 +19,7 @@
 package org.balau.fakedawn;
 
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -54,15 +55,24 @@ public class DawnSound extends Service implements OnCompletionListener, OnErrorL
 	private static final int TIMER_VOLUME_UPDATE_MILLIS = 10*1000;
 	private static final long TIMEOUT_INACTIVE_MILLIS = 10*1000;
 
-	private Timer m_volumeUpdateTimer = null; //TODO: use Handler instead of Timer?
-	
 	private Handler m_volumeUpdateHandler = new Handler();
 	private Runnable m_volumeUpdater = new Runnable() {
 		
 		@Override
 		public void run() {
-			// TODO Auto-generated method stub
-			
+			if(m_soundInitialized)
+			{
+				updateVolume(System.currentTimeMillis());
+				if(!m_player.isPlaying())
+				{
+					m_player.start();
+				}
+				if(m_vibrate)
+				{
+					m_vibrator.vibrate(m_vibratePattern, 0);
+				}
+				m_volumeUpdateHandler.postDelayed(m_volumeUpdater, TIMER_VOLUME_UPDATE_MILLIS);
+			}
 		}
 	};
 	private Handler m_inactiveTimeoutHandler = new Handler();
@@ -108,16 +118,8 @@ public class DawnSound extends Service implements OnCompletionListener, OnErrorL
 				m_player.stop();
 			}
 		}
-		if(m_volumeUpdateTimer != null)
-		{
-			m_volumeUpdateTimer.cancel();
-			m_volumeUpdateTimer = null;
-		}
-		if(m_volumeUpdateTimer != null)
-		{
-			m_volumeUpdateTimer.cancel();
-			m_volumeUpdateTimer = null;
-		}
+		m_volumeUpdateHandler.removeCallbacks(m_volumeUpdater);
+		m_inactiveTimeoutHandler.removeCallbacks(m_inactiveTimeout);
 		if(m_vibrate)
 		{
 			m_vibrate = false;
@@ -230,27 +232,11 @@ public class DawnSound extends Service implements OnCompletionListener, OnErrorL
 						m_vibrate = false;
 					}
 				}
-
-				m_volumeUpdateTimer = new Timer();
-				m_volumeUpdateTimer.schedule(
-						new TimerTask() {
-
-							@Override
-							public void run() {
-								if(m_soundInitialized)
-								{
-									updateVolume(System.currentTimeMillis());
-									if(!m_player.isPlaying())
-									{
-										m_player.start();
-									}
-									if(m_vibrate)
-									{
-										m_vibrator.vibrate(m_vibratePattern, 0);
-									}
-								}
-							}
-						}, new Date(m_soundStartMillis), TIMER_VOLUME_UPDATE_MILLIS);
+				long delay = Calendar.getInstance().getTimeInMillis() - m_soundStartMillis;
+				if (delay < 0) {
+					delay = 0;
+				}
+				m_volumeUpdateHandler.postAtTime(m_volumeUpdater, delay);
 				Log.d("FakeDawn", "Sound scheduled.");
 			}
 		}
@@ -286,11 +272,7 @@ public class DawnSound extends Service implements OnCompletionListener, OnErrorL
 		Log.e("FakeDawn", String.format("MediaPlayer error. what: %d, extra: %d", what, extra));
 		m_soundInitialized = false;
 		mp.reset();
-		if(m_volumeUpdateTimer != null)
-		{
-			m_volumeUpdateTimer.cancel();
-			m_volumeUpdateTimer = null;
-		}
+		m_volumeUpdateHandler.removeCallbacks(m_volumeUpdater);
 		stopSelf();
 		return true;
 	}
