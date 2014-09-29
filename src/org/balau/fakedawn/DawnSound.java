@@ -110,6 +110,7 @@ public class DawnSound extends Service implements OnCompletionListener, OnErrorL
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
+		Log.d("FakeDawn", "DawnSound onDestroy");
 		if(m_soundInitialized)
 		{
 			m_soundInitialized = false;
@@ -237,7 +238,7 @@ public class DawnSound extends Service implements OnCompletionListener, OnErrorL
 						//m_vibrate = m_vibrator.hasVibrator();
 					}
 				}
-				long delay = Calendar.getInstance().getTimeInMillis() - m_soundStartMillis;
+				long delay = System.currentTimeMillis() - m_soundStartMillis;
 				if (delay < 0) {
 					delay = 0;
 				}

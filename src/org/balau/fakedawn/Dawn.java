@@ -27,6 +27,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View.OnClickListener;
@@ -36,13 +37,21 @@ import android.view.WindowManager;
 
 public class Dawn extends Activity implements OnClickListener {
 
-	private static int TIMER_TICK_SECONDS = 10;
+	private static int BRIGHTNESS_UPDATE_MILLIS = 10*1000;
 	private static final String ALARM_START_MILLIS = "ALARM_START_MILLIS";
 	private static int COLOR_OPAQUE = 0xFF000000;
 
 	private long m_alarmStartMillis;
 	private long m_alarmEndMillis;
-	private Timer m_timer;
+	private Handler m_brightnessUpdaterHandler = new Handler();
+	private Runnable m_brightnessUpdater = new Runnable() {
+		
+		@Override
+		public void run() {
+			updateBrightness(System.currentTimeMillis());
+			m_brightnessUpdaterHandler.postDelayed(m_brightnessUpdater, BRIGHTNESS_UPDATE_MILLIS);
+		}
+	};
 
 	private int m_dawnColor;
 	private boolean m_ending;
@@ -174,22 +183,7 @@ public class Dawn extends Activity implements OnClickListener {
 	@Override
 	protected void onStart() {
 		super.onStart();
-		updateBrightness(System.currentTimeMillis());
-		m_timer = new Timer();
-		m_timer.schedule(
-				new TimerTask() {
-
-					@Override
-					public void run() {
-						runOnUiThread(
-								new Runnable() {
-									public void run() {
-										updateBrightness(System.currentTimeMillis());
-									}
-								});
-					}
-				}, TIMER_TICK_SECONDS*1000, TIMER_TICK_SECONDS*1000);
-
+		m_brightnessUpdater.run();
 	}
 
 	/* (non-Javadoc)
@@ -198,7 +192,7 @@ public class Dawn extends Activity implements OnClickListener {
 	@Override
 	protected void onStop() {
 		super.onStop();
-		m_timer.cancel();
+		m_brightnessUpdaterHandler.removeCallbacks(m_brightnessUpdater);
 	}
 
 	/* (non-Javadoc)
@@ -207,9 +201,12 @@ public class Dawn extends Activity implements OnClickListener {
 	@Override
 	protected void onPause() {
 		super.onPause();
-		Intent sound = new Intent(getApplicationContext(), DawnSound.class);
-		sound.putExtra(DawnSound.EXTRA_INTENT_TYPE, DawnSound.EXTRA_INTENT_TYPE_INACTIVE);
-		startService(sound);
+		if (!m_ending)
+		{
+			Intent sound = new Intent(getApplicationContext(), DawnSound.class);
+			sound.putExtra(DawnSound.EXTRA_INTENT_TYPE, DawnSound.EXTRA_INTENT_TYPE_INACTIVE);
+			startService(sound);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -218,9 +215,12 @@ public class Dawn extends Activity implements OnClickListener {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		Intent sound = new Intent(getApplicationContext(), DawnSound.class);
-		sound.putExtra(DawnSound.EXTRA_INTENT_TYPE, DawnSound.EXTRA_INTENT_TYPE_ACTIVE);
-		startService(sound);
+		if (!m_ending)
+		{
+			Intent sound = new Intent(getApplicationContext(), DawnSound.class);
+			sound.putExtra(DawnSound.EXTRA_INTENT_TYPE, DawnSound.EXTRA_INTENT_TYPE_ACTIVE);
+			startService(sound);
+		}
 	}
 
 	/* (non-Javadoc)
