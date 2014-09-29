@@ -29,8 +29,8 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
-import android.media.MediaPlayer.OnPreparedListener;
 import android.net.Uri;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.Vibrator;
 import android.util.Log;
@@ -55,7 +55,26 @@ public class DawnSound extends Service implements OnCompletionListener, OnErrorL
 	private static final long TIMEOUT_INACTIVE_MILLIS = 10*1000;
 
 	private Timer m_volumeUpdateTimer = null; //TODO: use Handler instead of Timer?
-	private Timer m_inactiveTimer = null;
+	
+	private Handler m_volumeUpdateHandler = new Handler();
+	private Runnable m_volumeUpdater = new Runnable() {
+		
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+			
+		}
+	};
+	private Handler m_inactiveTimeoutHandler = new Handler();
+	private Runnable m_inactiveTimeout = new Runnable() {
+		
+		@Override
+		public void run() {
+			Log.d("FakeDawn", "Dawn inactive timeout.");
+			stopSelf();
+		}
+	};
+	
 	private long m_soundStartMillis;
 	private long m_soundEndMillis;
 	private MediaPlayer m_player = new MediaPlayer();
@@ -135,30 +154,15 @@ public class DawnSound extends Service implements OnCompletionListener, OnErrorL
 	}
 
 	private int onIntentInactive(Intent intent, int flags, int startId) {
-		if (m_inactiveTimer != null)
-		{
-			m_inactiveTimer.cancel();
-			m_inactiveTimer = null;
-		}
-		m_inactiveTimer = new Timer();
-		m_inactiveTimer.schedule(new TimerTask() {
-			
-			@Override
-			public void run() {
-				stopSelf();
-			}
-		}, TIMEOUT_INACTIVE_MILLIS);
+		m_inactiveTimeoutHandler.removeCallbacks(m_inactiveTimeout);
+		m_inactiveTimeoutHandler.postDelayed(m_inactiveTimeout, TIMEOUT_INACTIVE_MILLIS);
 		Log.d("FakeDawn", "Dawn is inactive, setting timeout to stop sound...");
 		return START_STICKY; //TODO: check for problems when start intent is sent, then inactive is sent and then service is killed.
 	}
 
 	private int onIntentActive(Intent intent, int flags, int startId) {
-		if (m_inactiveTimer != null)
-		{
-			m_inactiveTimer.cancel();
-			m_inactiveTimer = null;
-			Log.d("FakeDawn", "Dawn is now active, cancelling timeout.");
-		}
+		m_inactiveTimeoutHandler.removeCallbacks(m_inactiveTimeout);
+		Log.d("FakeDawn", "Dawn is now active, cancelling timeout.");
 		return START_STICKY;  //TODO: check for problems when start intent is sent, then active is sent and then service is killed.
 	}
 
