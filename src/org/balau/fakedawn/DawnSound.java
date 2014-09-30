@@ -234,12 +234,13 @@ public class DawnSound extends Service implements OnCompletionListener, OnErrorL
 						//m_vibrate = m_vibrator.hasVibrator();
 					}
 				}
-				long delay = System.currentTimeMillis() - m_soundStartMillis;
+				long delay = m_soundStartMillis - System.currentTimeMillis();
 				if (delay < 0) {
 					delay = 0;
 				}
-				m_volumeUpdateHandler.postAtTime(m_volumeUpdater, delay);
-				Log.d("FakeDawn", "Sound scheduled.");
+				m_volumeUpdateHandler.postDelayed(m_volumeUpdater, delay);
+				Log.d("FakeDawn", 
+						String.format("Sound scheduled in %d seconds.", delay/1000));
 			}
 		}
 		return START_REDELIVER_INTENT;
