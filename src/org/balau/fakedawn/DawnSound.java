@@ -19,10 +19,6 @@
 package org.balau.fakedawn;
 
 import java.io.IOException;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import android.app.Service;
 import android.content.Intent;
@@ -286,13 +282,9 @@ public class DawnSound extends Service implements OnCompletionListener, OnErrorL
 	@Override
 	public void onCompletion(MediaPlayer mp) {
 		Log.w("FakeDawn", "Sound completed even if looping.");
-		//TODO: move in common function that prepares MediaPlayer
-		try {
-			mp.prepare();
-		} catch (IllegalStateException e) {
-			Log.e("FakeDawn", "onCompletion prepare", e);
-		} catch (IOException e) {
-			Log.e("FakeDawn", "onCompletion prepare", e);
+		if(m_soundInitialized)
+		{
+			mp.start();
 		}
 	}	
 }
