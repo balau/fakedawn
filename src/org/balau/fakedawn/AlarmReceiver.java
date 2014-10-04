@@ -38,6 +38,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 
 	//TODO: synchronized access?
 	private static WakeLock m_alarmWakeLock = null;
+	private static final long WAKE_LOCK_TIMEOUT_MILLIS = 1000*10;
 
 	private void releaseWakeLock(boolean expectedHeld) {
 		if(AlarmReceiver.m_alarmWakeLock != null)
@@ -143,9 +144,9 @@ public class AlarmReceiver extends BroadcastReceiver {
 				PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
 				releaseWakeLock(false);
 				AlarmReceiver.m_alarmWakeLock = pm.newWakeLock(
-						PowerManager.FULL_WAKE_LOCK|PowerManager.ACQUIRE_CAUSES_WAKEUP,
+						PowerManager.PARTIAL_WAKE_LOCK,
 						"FakeDawn.AlarmReceiver");
-				AlarmReceiver.m_alarmWakeLock.acquire();
+				AlarmReceiver.m_alarmWakeLock.acquire(WAKE_LOCK_TIMEOUT_MILLIS); //TODO: use WakefulBroadcastReceiver instead?
 				Intent openDawn = new Intent(context, Dawn.class);
 				openDawn.setFlags(
 						Intent.FLAG_ACTIVITY_NEW_TASK|
