@@ -19,8 +19,6 @@
 package org.balau.fakedawn;
 
 import java.util.Calendar;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import android.app.Activity;
 import android.content.Context;
@@ -28,10 +26,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.KeyEvent;
-import android.view.View.OnClickListener;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.Window;
 import android.view.WindowManager;
 
@@ -63,13 +60,19 @@ public class Dawn extends Activity implements OnClickListener {
 
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.dawn);
-
-		getWindow().addFlags(
+		Window mainWindow = getWindow();
+		mainWindow.addFlags(
 				WindowManager.LayoutParams.FLAG_FULLSCREEN|
 				WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON|
 				WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED|
 				WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD|
 				WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+		mainWindow.clearFlags(
+				WindowManager.LayoutParams.FLAG_ALLOW_LOCK_WHILE_SCREEN_ON);
+		WindowManager.LayoutParams mainWindowParams = mainWindow.getAttributes();
+		mainWindowParams.screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_FULL;
+		mainWindowParams.buttonBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_OFF;
+		mainWindow.setAttributes(mainWindowParams);
 
 		findViewById(R.id.dawn_background).setOnClickListener(this);
 
