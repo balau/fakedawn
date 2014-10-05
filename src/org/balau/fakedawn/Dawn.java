@@ -26,6 +26,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -100,7 +101,8 @@ public class Dawn extends Activity implements OnClickListener {
 		long soundEnd = dawnStartMillis + (pref.getInt("sound_max", 15)*1000L*60L);
 		sound.putExtra(DawnSound.EXTRA_SOUND_START_MILLIS, soundStart);
 		sound.putExtra(DawnSound.EXTRA_SOUND_END_MILLIS, soundEnd);
-		sound.putExtra(DawnSound.EXTRA_SOUND_URI, pref.getString("sound", ""));
+		sound.putExtra(DawnSound.EXTRA_SOUND_URI, 
+				pref.getString("sound", Settings.System.DEFAULT_ALARM_ALERT_URI.toString()));
 		if(pref.contains("volume"))
 		{
 			sound.putExtra(DawnSound.EXTRA_SOUND_VOLUME, pref.getInt("volume", 0));

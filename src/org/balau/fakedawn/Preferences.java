@@ -163,7 +163,7 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		vibrateButton.setChecked(pref.getBoolean("vibrate", false));
 
 		Uri sound = Uri.parse(
-				pref.getString("sound", getFallbackSoundUriString(this)));
+				pref.getString("sound", Settings.System.DEFAULT_ALARM_ALERT_URI.toString()));
 		changeSound(sound);
 
 		resizeSliders();
