@@ -38,10 +38,12 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
+import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -68,14 +70,14 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 	private static final int TIME_SOUND_START = 2;
 	private static final int TIME_SOUND_END = 3;
 
-	private Uri m_soundUri = null;
+	private Uri m_soundUri;
 	private VolumePreview m_preview = new VolumePreview();
 	private int m_dawnColor;
 	private int m_clickedTime;
 
 	private Handler m_sliderResizerHandler = new Handler();
 	private Runnable m_sliderResizer = new Runnable() {
-		
+
 		@Override
 		public void run() {
 			resizeSliders();
@@ -121,6 +123,7 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		soundSlider.setOnClickListener(this);
 		soundSlider.setOnTimesChangedListener(this);
 
+		//TODO: defaults as fields
 		DawnTime dawnStart = new DawnTime(
 				pref.getInt("dawn_start_hour", 8),
 				pref.getInt("dawn_start_minute", 0));
@@ -146,17 +149,6 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 
 		updateColor(pref.getInt("color", 0x4040FF));
 
-		String sound = pref.getString("sound",
-				getFallbackSoundUriString());
-		if(sound.isEmpty())
-		{
-			m_soundUri = null;
-		}
-		else
-		{
-			m_soundUri = Uri.parse(sound);
-		}
-
 		AudioManager am = (AudioManager)getSystemService(AUDIO_SERVICE);
 		int maxVolume = am.getStreamMaxVolume(AudioManager.STREAM_ALARM);
 		seekBarVolume.setMax(maxVolume);
@@ -168,7 +160,9 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		ToggleButton vibrateButton = (ToggleButton) findViewById(R.id.toggleButtonVibrate);
 		vibrateButton.setChecked(pref.getBoolean("vibrate", false));
 
-		updateSoundViews();
+		Uri sound = Uri.parse(
+				pref.getString("sound", getFallbackSoundUriString()));
+		changeSound(sound);
 
 		resizeSliders();
 
@@ -186,6 +180,7 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 	}
 
 	private String getFallbackSoundUriString() {
+		//TODO: use Uri
 		return "android.resource://" + getPackageName() + "/" + R.raw.canggu_dawn;
 	}
 
@@ -478,38 +473,89 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		}
 	}
 
-	private void updateSoundViews()
+	private void setSoundViewsEnabled(boolean enabled)
 	{
-		Button soundButton = (Button) findViewById(R.id.buttonSound);
 		SeekBar seekBarVolume = (SeekBar)findViewById(R.id.seekBarVolume);
 		ToggleButton vibrateButton = (ToggleButton) findViewById(R.id.toggleButtonVibrate);
 		TimeSlider soundSlider = (TimeSlider)findViewById(R.id.timeSlider2);
 
-		boolean soundViewsEnabled = (m_soundUri != null);
+		seekBarVolume.setEnabled(enabled);
+		vibrateButton.setEnabled(enabled);
+		soundSlider.setEnabled(enabled);
+	}
 
-		if(soundViewsEnabled)
+	private void setSoundButtonText(String text)
+	{
+		Button soundButton = (Button) findViewById(R.id.buttonSound);
+		soundButton.setText(text);
+	}
+
+	private void disableSound()
+	{
+		setSoundButtonText("Silent");
+		setSoundViewsEnabled(false);
+		m_preview.stop();
+	}
+
+	private void enableSound(Uri sound)
+	{
+		if (sound.toString().equals(getFallbackSoundUriString()))
 		{
-
-			String soundTitle;
-			if (m_soundUri.toString().equals(getFallbackSoundUriString()))
-			{
-				soundTitle = "Canggu Dawn";
-			}
-			else
-			{
-				soundTitle = RingtoneManager.getRingtone(this, m_soundUri).getTitle(this);
-			}
-			soundButton.setText(soundTitle);
+			setSoundButtonText("Canggu Dawn");
 		}
 		else
 		{
-			soundButton.setText("Silent");
+			setSoundButtonText(
+					RingtoneManager.getRingtone(this, sound).getTitle(this));
 		}
-		seekBarVolume.setEnabled(soundViewsEnabled);
-		vibrateButton.setEnabled(soundViewsEnabled);
-		soundSlider.setEnabled(soundViewsEnabled);
+		setSoundViewsEnabled(true);
+		m_preview.setSoundUri(this, sound);
+	}
 
-		m_preview.setSoundUri(this, m_soundUri);
+	private void changeSound(Uri sound)
+	{
+		Uri sanitizedSound;
+		if (sound == null || sound.toString().isEmpty())
+		{
+			sanitizedSound = null;
+		}
+		else
+		{
+			sanitizedSound = checkSound(sound);
+		}
+
+		if (sanitizedSound == null)
+		{
+			m_soundUri = null;
+			disableSound();
+		}
+		else
+		{
+			m_soundUri = sanitizedSound;
+			enableSound(sanitizedSound);
+		}
+	}
+
+	private Uri checkSound(Uri sound) {
+		Uri[] sounds = {
+				sound,
+				Settings.System.DEFAULT_ALARM_ALERT_URI,
+				Uri.parse(getFallbackSoundUriString()),
+				Settings.System.DEFAULT_RINGTONE_URI,
+				Settings.System.DEFAULT_NOTIFICATION_URI,
+		};
+		for (Uri s: sounds)
+		{
+			Ringtone tone;
+			tone = RingtoneManager.getRingtone(this, sound);
+			if (tone != null)
+			{
+				//TODO: toast if not first
+				return s;
+			}
+		}
+		//TODO: error toast 
+		return null;
 	}
 
 	/* (non-Javadoc)
@@ -521,9 +567,9 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		{
 			if(resultCode == RESULT_OK)
 			{
-				m_soundUri = (Uri) data.getParcelableExtra(
+				Uri sound = (Uri) data.getParcelableExtra(
 						RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
-				updateSoundViews();
+				changeSound(sound);
 			}
 		}
 	}
