@@ -20,8 +20,6 @@
 package org.balau.fakedawn;
 
 import java.io.IOException;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import org.balau.fakedawn.ColorPickerDialog.OnColorChangedListener;
 import org.balau.fakedawn.TimeSlider.DawnTime;
