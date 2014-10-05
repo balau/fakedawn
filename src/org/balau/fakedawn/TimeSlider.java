@@ -85,24 +85,24 @@ public class TimeSlider extends IntervalSlider {
 	{
 		return new DawnTime(m_startTime.getMinutes());
 	}
-	
+
 	public int getSpanTime()
 	{
 		return m_spanMinutes;
 	}
-	
+
 	private void reposCursors(int leftMinutes, int rightMinutes)
 	{
 		setRightPos(1.0F);
 		setLeftPos(0.0F);
-		
+
 		DawnTime leftTime = new DawnTime(leftMinutes);
 		setLeftTime(leftTime.getHour(), leftTime.getMinute());
-		
+
 		DawnTime rightTime = new DawnTime(rightMinutes);
 		setRightTime(rightTime.getHour(), rightTime.getMinute());
 	}
-	
+
 	public int setStartTime(int minutes)
 	{
 		int rightMinutes = getRightTime().getMinutes();
@@ -111,25 +111,25 @@ public class TimeSlider extends IntervalSlider {
 		int minMinutes = leftMinutes;
 		if(minutes > minMinutes)
 			minutes = minMinutes;
-		
+
 		m_startTime = new DawnTime(minutes);
 
 		int minSpan = rightMinutes - minutes;
 		if(m_spanMinutes < minSpan)
 			m_spanMinutes = minSpan;
-		
+
 		reposCursors(leftMinutes, rightMinutes);
 
 		updateView();
 
 		return minutes;
 	}
-	
+
 	public int setStartTime(DawnTime start)
 	{
 		return setStartTime(start.getMinutes());
 	}
-	
+
 	public int setStartTime(int hour, int minute)
 	{
 		return setStartTime(new DawnTime(hour, minute));
@@ -186,7 +186,7 @@ public class TimeSlider extends IntervalSlider {
 				((float)m_spanMinutes));
 		updateView();
 	}
-	
+
 	public void setLeftTime(DawnTime leftTime)
 	{
 		setLeftTime(leftTime.getMinutes());
@@ -214,12 +214,12 @@ public class TimeSlider extends IntervalSlider {
 				((float)m_spanMinutes));
 		updateView();
 	}
-	
+
 	public void setRightTime(DawnTime rightTime)
 	{
 		setRightTime(rightTime.getMinutes());
 	}
-	
+
 	public void setRightTime(int hour, int minute)
 	{
 		setRightTime(new DawnTime(hour, minute));
@@ -246,7 +246,7 @@ public class TimeSlider extends IntervalSlider {
 					Shader.TileMode.CLAMP);
 			m_paint.setShader(s);
 			setRectPaint(m_paint);
-			
+
 			if((leftMovement != 0.0F || rightMovement != 0.0F) && 
 					(m_timesChangedListener != null))
 			{
@@ -259,14 +259,14 @@ public class TimeSlider extends IntervalSlider {
 	public interface OnTimesChangedListener {
 		void onTimesChanged(TimeSlider s);
 	}
-	
+
 	private OnTimesChangedListener m_timesChangedListener = null;
-	
+
 	public void setOnTimesChangedListener(OnTimesChangedListener l)
 	{
 		m_timesChangedListener = l;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see com.balau.helloandroid.IntervalSlider#onMeasure(int, int)
 	 */
@@ -327,7 +327,7 @@ public class TimeSlider extends IntervalSlider {
 
 		public SavedState(Parcel source) {
 			super(source);
-			
+
 			color = source.readInt();
 			spanTime = source.readInt();
 			startTimeMinutes = source.readInt();
@@ -346,6 +346,16 @@ public class TimeSlider extends IntervalSlider {
 			super(superState);
 		}
 
+		@SuppressWarnings("unused")
+		public static final Parcelable.Creator<SavedState> CREATOR = new Parcelable.Creator<SavedState>() {
+			public SavedState createFromParcel(Parcel in) {
+				return new SavedState(in);
+			}
+
+			public SavedState[] newArray(int size) {
+				return new SavedState[size];
+			}
+		};
 	}
 
 	/* (non-Javadoc)

@@ -305,7 +305,7 @@ public class IntervalSlider extends View {
 		if(w*m_rightCursorPos+cursorRadius+bounds.width() > w)
 		{
 			xText = w*m_rightCursorPos-cursorRadius-bounds.right;
-			
+
 		}
 		else
 		{
@@ -315,7 +315,7 @@ public class IntervalSlider extends View {
 		canvas.drawText(m_textRight, xText, yText, textPaint);
 		bounds.offset((int)Math.round(xText), (int)Math.round(yText));
 		m_textRightBounds = new Rect(bounds);
-		
+
 		if(!isEnabled())
 		{
 			Paint opaquePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -433,7 +433,7 @@ public class IntervalSlider extends View {
 			{
 				return TOUCH_RIGHT;
 			}
-			
+
 			int w = getMeasuredWidth();
 			int h = getMeasuredHeight();
 			int cursorZoneHeight = getCursorZoneHeight(h);
@@ -537,6 +537,16 @@ public class IntervalSlider extends View {
 			super(superState);
 		}
 
+		@SuppressWarnings("unused")
+		public static final Parcelable.Creator<SavedState> CREATOR = new Parcelable.Creator<SavedState>() {
+			public SavedState createFromParcel(Parcel in) {
+				return new SavedState(in);
+			}
+
+			public SavedState[] newArray(int size) {
+				return new SavedState[size];
+			}
+		};
 	}
 
 	/* (non-Javadoc)
@@ -577,7 +587,7 @@ public class IntervalSlider extends View {
 		{
 			invalidate();
 		}
-		
+
 		super.setEnabled(enabled);
 	}
 }
