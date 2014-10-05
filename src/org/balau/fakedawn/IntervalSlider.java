@@ -529,8 +529,8 @@ public class IntervalSlider extends View {
 		public void writeToParcel(Parcel dest, int flags) {
 			super.writeToParcel(dest, flags);
 
-			dest.writeFloat(rightPos);
 			dest.writeFloat(leftPos);
+			dest.writeFloat(rightPos);
 		}
 
 		public SavedState(Parcelable superState) {

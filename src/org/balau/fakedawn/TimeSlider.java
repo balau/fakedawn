@@ -328,9 +328,9 @@ public class TimeSlider extends IntervalSlider {
 		public SavedState(Parcel source) {
 			super(source);
 
-			color = source.readInt();
-			spanTime = source.readInt();
 			startTimeMinutes = source.readInt();
+			spanTime = source.readInt();
+			color = source.readInt();
 		}
 
 		@Override
