@@ -182,7 +182,7 @@ public class DawnSound extends Service implements OnCompletionListener, OnErrorL
 		}
 		else
 		{
-			m_soundUri = Uri.parse(sound);
+			m_soundUri = Preferences.checkSound(this, Uri.parse(sound));
 		}
 	}
 	

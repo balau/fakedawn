@@ -19,7 +19,9 @@
 
 package org.balau.fakedawn;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.balau.fakedawn.ColorPickerDialog.OnColorChangedListener;
 import org.balau.fakedawn.TimeSlider.DawnTime;
@@ -161,7 +163,7 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		vibrateButton.setChecked(pref.getBoolean("vibrate", false));
 
 		Uri sound = Uri.parse(
-				pref.getString("sound", getFallbackSoundUriString()));
+				pref.getString("sound", getFallbackSoundUriString(this)));
 		changeSound(sound);
 
 		resizeSliders();
@@ -179,9 +181,9 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		Log.d("FakeDawn", "Preferences loaded.");
 	}
 
-	private String getFallbackSoundUriString() {
+	private static String getFallbackSoundUriString(Context context) {
 		//TODO: use Uri
-		return "android.resource://" + getPackageName() + "/" + R.raw.canggu_dawn;
+		return "android.resource://" + context.getPackageName() + "/" + R.raw.canggu_dawn;
 	}
 
 	/* (non-Javadoc)
@@ -370,6 +372,7 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 			{
 				editor.putString("sound", m_soundUri.toString());
 			}
+
 			editor.putInt("sound_start",soundSlider.getLeftTime().getMinutes() - dawn_start_minutes);
 			editor.putInt("sound_max",soundSlider.getRightTime().getMinutes() - dawn_start_minutes);
 
@@ -499,7 +502,7 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 
 	private void enableSound(Uri sound)
 	{
-		if (sound.toString().equals(getFallbackSoundUriString()))
+		if (sound.toString().equals(getFallbackSoundUriString(this)))
 		{
 			setSoundButtonText("Canggu Dawn");
 		}
@@ -521,7 +524,7 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		}
 		else
 		{
-			sanitizedSound = checkSound(sound);
+			sanitizedSound = checkSound(this, sound);
 		}
 
 		if (sanitizedSound == null)
@@ -536,22 +539,26 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		}
 	}
 
-	private Uri checkSound(Uri sound) {
+	public static Uri checkSound(Context context, Uri sound) {
+		//TODO: move in other class?
 		Uri[] sounds = {
 				sound,
 				Settings.System.DEFAULT_ALARM_ALERT_URI,
-				Uri.parse(getFallbackSoundUriString()),
+				Uri.parse(getFallbackSoundUriString(context)),
 				Settings.System.DEFAULT_RINGTONE_URI,
 				Settings.System.DEFAULT_NOTIFICATION_URI,
 		};
 		for (Uri s: sounds)
 		{
-			Ringtone tone;
-			tone = RingtoneManager.getRingtone(this, sound);
-			if (tone != null)
-			{
-				//TODO: toast if not first
+			try {
+				InputStream tmp = context.getContentResolver().openInputStream(s);
+				tmp.close();
+				//TODO: toast if not first.
 				return s;
+			} catch (FileNotFoundException e) {
+				continue;
+			} catch (IOException e) {
+				continue;
 			}
 		}
 		//TODO: error toast 
