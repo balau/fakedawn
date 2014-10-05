@@ -33,6 +33,7 @@ import android.util.Log;
  *
  */
 public class AlarmReceiver extends BroadcastReceiver {
+	//TODO: Use LocalBroadcastManager instead?
 	static final String ACTION_START_ALARM = "org.balau.fakedawn.AlarmReceiver.ACTION_START_ALARM";
 	static final String ACTION_STOP_ALARM = "org.balau.fakedawn.AlarmReceiver.ACTION_STOP_ALARM";
 

@@ -91,6 +91,7 @@ public class Dawn extends Activity implements OnClickListener {
 		}
 		m_alarmEndMillis = dawnStartMillis + (1000L*60L*pref.getInt("light_max", 15));
 
+		//TODO: consistent default preferences.
 		m_dawnColor = pref.getInt("color", 0x4040FF);
 		Intent sound = new Intent(getApplicationContext(), DawnSound.class);
 		sound.putExtra(DawnSound.EXTRA_INTENT_TYPE, DawnSound.EXTRA_INTENT_TYPE_START);
