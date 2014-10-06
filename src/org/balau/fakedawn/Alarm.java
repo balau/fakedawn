@@ -64,8 +64,15 @@ public class Alarm extends Service {
 		if(getPreferences().getBoolean("enabled", false))
 		{
 			Calendar nextAlarmTime = getNextAlarmTime();
-			set(nextAlarmTime);
-			message = nextAlarmMessage(nextAlarmTime);
+			if (nextAlarmTime == null)
+			{
+				message = "No week day selected! Fake Dawn Alarm Disabled.";	
+			}
+			else
+			{
+				set(nextAlarmTime);
+				message = nextAlarmMessage(nextAlarmTime);
+			}
 		}
 		else
 		{
@@ -107,6 +114,12 @@ public class Alarm extends Service {
 				getOpenDawnPendingIntent());
 	}
 	
+	private boolean shouldFire(int dayOfWeek)
+	{
+		//TODO: from preferences
+		return true;
+	}
+	
 	private Calendar getNextAlarmTime()
 	{
 		SharedPreferences pref = getPreferences();
@@ -119,6 +132,17 @@ public class Alarm extends Service {
 			nextAlarmTime.add(Calendar.DAY_OF_YEAR, 1);
 			//TODO: check if enough?
 		}
+		int ndays = 0;
+		while(!shouldFire(nextAlarmTime.get(Calendar.DAY_OF_WEEK)))
+		{
+			nextAlarmTime.add(Calendar.DAY_OF_YEAR, 1);
+			ndays++;
+			if(ndays >= 7) // No weekday is ticked.
+			{
+				return null;
+			}
+		}
+		
 		return nextAlarmTime;
 	}
 	
