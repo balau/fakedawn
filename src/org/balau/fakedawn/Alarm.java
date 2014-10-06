@@ -35,6 +35,7 @@ import android.widget.Toast;
 public class Alarm extends Service {
 
 	public static final String EXTRA_SHOW_TOAST = "org.balau.fakedawn.Alarm.EXTRA_SHOW_TOAST";
+	private static final long TOLERANCE_MILLIS = 1000*10;
 
 	@Override
 	public IBinder onBind(Intent arg0) {
@@ -58,12 +59,13 @@ public class Alarm extends Service {
 			showToast = false;
 		}
 
-		this.cancel();
+		cancel();
 		String message;
-		if(this.getPreferences().getBoolean("enabled", false))
+		if(getPreferences().getBoolean("enabled", false))
 		{
-			Calendar nextAlarmTime = this.set();
-			message = this.nextAlarmMessage(nextAlarmTime);
+			Calendar nextAlarmTime = getNextAlarmTime();
+			set(nextAlarmTime);
+			message = nextAlarmMessage(nextAlarmTime);
 		}
 		else
 		{
@@ -101,42 +103,38 @@ public class Alarm extends Service {
 	
 	private void cancel()
 	{
-		this.getAlarmManager().cancel(
-				this.getOpenDawnPendingIntent());
+		getAlarmManager().cancel(
+				getOpenDawnPendingIntent());
 	}
 	
-	private Calendar set()
+	private Calendar getNextAlarmTime()
 	{
-		SharedPreferences pref = this.getPreferences();
+		SharedPreferences pref = getPreferences();
 		Calendar nextAlarmTime = Calendar.getInstance();
 		nextAlarmTime.set(Calendar.HOUR_OF_DAY, pref.getInt("dawn_start_hour", 8));
 		nextAlarmTime.set(Calendar.MINUTE, pref.getInt("dawn_start_minute", 0));
 		nextAlarmTime.set(Calendar.SECOND, 0);
-		long toleranceMillis = 1000*10; //10s
-		if(nextAlarmTime.getTimeInMillis() < System.currentTimeMillis() + toleranceMillis)
+		if(nextAlarmTime.getTimeInMillis() < System.currentTimeMillis() + TOLERANCE_MILLIS)
 		{
 			nextAlarmTime.add(Calendar.DAY_OF_YEAR, 1);
 			//TODO: check if enough?
 		}
-		this.set(nextAlarmTime);
 		return nextAlarmTime;
 	}
 	
-	private void set(Calendar nextAlarmTime)
+	private void set(AlarmManager alarmManager, int type, long triggerAtMillis, PendingIntent operation)
 	{
-		AlarmManager alarmManager = this.getAlarmManager();
-		PendingIntent openDawnIntent = this.getOpenDawnPendingIntent();
     	// API 19 changed set() behaviour and added setExact
 		// https://developer.android.com/reference/android/app/AlarmManager.html#set(int, long, android.app.PendingIntent)
 		// Using setExact if it exists, otherwise fall back to set.
 	    try {
 	        Method setExact = AlarmManager.class.getDeclaredMethod(
 	            "setExact", int.class, long.class, PendingIntent.class);
-	        setExact.invoke(alarmManager, AlarmManager.RTC_WAKEUP,
-	        		nextAlarmTime.getTimeInMillis(), openDawnIntent);
+	        setExact.invoke(alarmManager, type,
+	        		triggerAtMillis, operation);
 	      } catch (NoSuchMethodException e) {
-	        alarmManager.set(AlarmManager.RTC_WAKEUP,
-	        		nextAlarmTime.getTimeInMillis(), openDawnIntent);
+	        alarmManager.set(type,
+	        		triggerAtMillis, operation);
 	      } catch (IllegalAccessException e) {
 	        throw new RuntimeException(e);
 	      } catch (IllegalArgumentException e) {
@@ -146,6 +144,31 @@ public class Alarm extends Service {
 	      }
 	}
 	
+	private void set(Calendar nextAlarmTime)
+	{
+		AlarmManager alarmManager = getAlarmManager();
+		PendingIntent openDawnIntent = getOpenDawnPendingIntent();
+		set(
+				alarmManager,
+				AlarmManager.RTC_WAKEUP, 
+				nextAlarmTime.getTimeInMillis(), 
+				openDawnIntent);
+	}
+	
+	private String getPlural(long n, String name)
+	{
+		String plural;
+		if(n != 1)
+		{
+			plural = "s";
+		}
+		else
+		{
+			plural = "";
+		}
+		return String.format("%d %s%s", n, name, plural);
+	}
+
 	private String nextAlarmMessage(Calendar nextAlarmTime)
 	{
 		long elapsed = nextAlarmTime.getTimeInMillis() - System.currentTimeMillis();
