@@ -181,11 +181,6 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		Log.d("FakeDawn", "Preferences loaded.");
 	}
 
-	private static String getFallbackSoundUriString(Context context) {
-		//TODO: use Uri
-		return "android.resource://" + context.getPackageName() + "/" + R.raw.canggu_dawn;
-	}
-
 	/* (non-Javadoc)
 	 * @see android.app.Activity#onStart()
 	 */
@@ -502,15 +497,8 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 
 	private void enableSound(Uri sound)
 	{
-		if (sound.toString().equals(getFallbackSoundUriString(this)))
-		{
-			setSoundButtonText("Canggu Dawn");
-		}
-		else
-		{
-			setSoundButtonText(
-					RingtoneManager.getRingtone(this, sound).getTitle(this));
-		}
+		setSoundButtonText(
+				RingtoneManager.getRingtone(this, sound).getTitle(this));
 		setSoundViewsEnabled(true);
 		m_preview.setSoundUri(this, sound);
 	}
@@ -544,7 +532,6 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		Uri[] sounds = {
 				sound,
 				Settings.System.DEFAULT_ALARM_ALERT_URI,
-				Uri.parse(getFallbackSoundUriString(context)),
 				Settings.System.DEFAULT_RINGTONE_URI,
 				Settings.System.DEFAULT_NOTIFICATION_URI,
 		};
