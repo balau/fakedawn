@@ -92,47 +92,11 @@ public class AlarmReceiver extends BroadcastReceiver {
 		return alarmStart;
 	}
 	
-	private boolean fireToday(Context context) {
-		SharedPreferences pref = context.getSharedPreferences("main", Context.MODE_PRIVATE);
-		String day;
-		Calendar alarmStart = getAlarmStart(pref);
-
-		switch (alarmStart.get(Calendar.DAY_OF_WEEK)) {
-		case Calendar.MONDAY:
-			day = "mondays";
-			break;
-		case Calendar.TUESDAY:
-			day = "tuesdays";
-			break;
-		case Calendar.WEDNESDAY:
-			day = "wednesdays";
-			break;
-		case Calendar.THURSDAY:
-			day = "thursdays";
-			break;
-		case Calendar.FRIDAY:
-			day = "fridays";
-			break;
-		case Calendar.SATURDAY:
-			day = "saturdays";
-			break;
-		case Calendar.SUNDAY:
-			day = "sundays";
-			break;
-		default:
-			day = "NON_EXISTING_WEEKDAY";
-			break;
-		}
-		return pref.getBoolean(day, false);
-	}
-	
 	/* (non-Javadoc)
 	 * @see android.content.BroadcastReceiver#onReceive(android.content.Context, android.content.Intent)
 	 */
 	@Override
 	public void onReceive(Context context, Intent intent) {
-		// TODO Auto-generated method stub
-
 		if(intent.getAction().equals(ACTION_START_ALARM))
 		{
 			Log.d("FakeDawn", "ACTION_START_ALARM received.");
@@ -141,25 +105,20 @@ public class AlarmReceiver extends BroadcastReceiver {
 			Intent updateAlarm = new Intent(context, Alarm.class);
 			context.startService(updateAlarm);
 			
-			if(fireToday(context)) {
-				PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-				releaseWakeLock(false);
-				AlarmReceiver.m_alarmWakeLock = pm.newWakeLock(
-						PowerManager.PARTIAL_WAKE_LOCK,
-						"FakeDawn.AlarmReceiver");
-				AlarmReceiver.m_alarmWakeLock.acquire(WAKE_LOCK_TIMEOUT_MILLIS); //TODO: use WakefulBroadcastReceiver instead?
-				Intent openDawn = new Intent(context, Dawn.class);
-				openDawn.setFlags(
-						Intent.FLAG_ACTIVITY_NEW_TASK|
-						Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS|
-						Intent.FLAG_FROM_BACKGROUND);
-				Log.d("FakeDawn", "Starting Dawn Activity.");
-				context.startActivity(openDawn);
-				//TODO: start sound service?
-			} else {
-				Log.d("FakeDawn", "Not today.");
-			}
-				
+			PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+			releaseWakeLock(false);
+			AlarmReceiver.m_alarmWakeLock = pm.newWakeLock(
+					PowerManager.PARTIAL_WAKE_LOCK,
+					"FakeDawn.AlarmReceiver");
+			AlarmReceiver.m_alarmWakeLock.acquire(WAKE_LOCK_TIMEOUT_MILLIS); //TODO: use WakefulBroadcastReceiver instead?
+			Intent openDawn = new Intent(context, Dawn.class);
+			openDawn.setFlags(
+					Intent.FLAG_ACTIVITY_NEW_TASK|
+					Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS|
+					Intent.FLAG_FROM_BACKGROUND);
+			Log.d("FakeDawn", "Starting Dawn Activity.");
+			context.startActivity(openDawn);
+			//TODO: start sound service?
 		}
 		else if(intent.getAction().equals(ACTION_STOP_ALARM))
 		{

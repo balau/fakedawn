@@ -114,10 +114,42 @@ public class Alarm extends Service {
 				getOpenDawnPendingIntent());
 	}
 	
+	public static boolean shouldFire(SharedPreferences pref, int dayOfWeek)
+	{
+		String day;
+		//TODO: dictionary?
+		switch (dayOfWeek) {
+		case Calendar.MONDAY:
+			day = "mondays";
+			break;
+		case Calendar.TUESDAY:
+			day = "tuesdays";
+			break;
+		case Calendar.WEDNESDAY:
+			day = "wednesdays";
+			break;
+		case Calendar.THURSDAY:
+			day = "thursdays";
+			break;
+		case Calendar.FRIDAY:
+			day = "fridays";
+			break;
+		case Calendar.SATURDAY:
+			day = "saturdays";
+			break;
+		case Calendar.SUNDAY:
+			day = "sundays";
+			break;
+		default:
+			day = "NON_EXISTING_WEEKDAY";
+			break;
+		}
+		return pref.getBoolean(day, false);
+	}
+	
 	private boolean shouldFire(int dayOfWeek)
 	{
-		//TODO: from preferences
-		return true;
+		return shouldFire(getPreferences(), dayOfWeek);
 	}
 	
 	private Calendar getNextAlarmTime()
