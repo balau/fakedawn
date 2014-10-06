@@ -169,6 +169,14 @@ public class Alarm extends Service {
 		return String.format("%d %s%s", n, name, plural);
 	}
 
+	private String buildMessage(String majorTime, String minorTime)
+	{
+		return String.format(
+				"Fake Dawn starting in %s and %s.",
+				majorTime,
+				minorTime);
+	}
+	
 	private String nextAlarmMessage(Calendar nextAlarmTime)
 	{
 		long elapsed = nextAlarmTime.getTimeInMillis() - System.currentTimeMillis();
@@ -180,9 +188,9 @@ public class Alarm extends Service {
 		String message;
 		if (elapsedDays > 0)
 		{
-			message = String.format(
-					"Fake Dawn starting in %d days and %d hours.",
-					elapsedDays, elapsedHours);
+			message = buildMessage(
+					getPlural(elapsedDays, "day"),
+					getPlural(elapsedHours, "hour"));
 		}
 		else
 		{
@@ -191,18 +199,18 @@ public class Alarm extends Service {
 			long elapsedMinutes = elapsed / minuteMillis;
 			if (elapsedHours > 0)
 			{
-				message = String.format(
-						"Fake Dawn starting in %d hours and %d minutes.",
-						elapsedHours, elapsedMinutes);
+				message = buildMessage(
+						getPlural(elapsedHours, "hour"),
+						getPlural(elapsedMinutes, "minute"));
 			}
 			else
 			{
 				elapsed -= elapsedMinutes * minuteMillis;
 				long secondMillis = 1000;
 				long elapsedSeconds = elapsed / secondMillis;
-				message = String.format(
-						"Fake Dawn starting in %d minutes and %d seconds.",
-						elapsedMinutes, elapsedSeconds);
+				message = buildMessage(
+						getPlural(elapsedMinutes, "minute"),
+						getPlural(elapsedSeconds, "second"));
 			}
 		}
 		return message;
