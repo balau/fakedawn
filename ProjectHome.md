@@ -1,0 +1,1 @@
+This Android Application is an alarm that uses gradually increasing brightness and gradually increasing sound volume to lead you out of deep sleep and wake you up gently.
