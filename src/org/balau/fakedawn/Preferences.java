@@ -162,6 +162,9 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 		ToggleButton vibrateButton = (ToggleButton) findViewById(R.id.toggleButtonVibrate);
 		vibrateButton.setChecked(pref.getBoolean("vibrate", false));
 
+		ToggleButton dissmissButton = (ToggleButton) findViewById(R.id.toggleButtonUseDismiss);
+		dissmissButton.setChecked(pref.getBoolean("dismiss", false));
+
 		Uri sound = Uri.parse(
 				pref.getString("sound", Settings.System.DEFAULT_ALARM_ALERT_URI.toString()));
 		changeSound(sound);
@@ -376,6 +379,9 @@ public class Preferences extends Activity implements OnClickListener, OnSeekBarC
 
 			ToggleButton vibrateButton = (ToggleButton) findViewById(R.id.toggleButtonVibrate);
 			editor.putBoolean("vibrate", vibrateButton.isChecked());
+
+			ToggleButton dissmissButton = (ToggleButton) findViewById(R.id.toggleButtonUseDismiss);
+			editor.putBoolean("dismiss", dissmissButton.isChecked());
 
 			editor.commit();
 

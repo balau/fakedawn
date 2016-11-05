@@ -32,6 +32,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
 
 public class Dawn extends Activity implements OnClickListener {
 
@@ -54,6 +55,8 @@ public class Dawn extends Activity implements OnClickListener {
 	private int m_dawnColor;
 	private boolean m_ending;
 
+	private boolean m_dismissbutton;
+
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -75,9 +78,19 @@ public class Dawn extends Activity implements OnClickListener {
 		mainWindowParams.buttonBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_OFF;
 		mainWindow.setAttributes(mainWindowParams);
 
-		findViewById(R.id.dawn_background).setOnClickListener(this);
 
 		SharedPreferences pref = getApplicationContext().getSharedPreferences("main", MODE_PRIVATE);
+		m_dismissbutton = pref.getBoolean("dismiss", false);
+
+		Button dismissbutton= (Button)findViewById(R.id.dismiss_button);
+		if (m_dismissbutton) {
+			dismissbutton.setOnClickListener(this);
+			dismissbutton.setVisibility(View.VISIBLE);
+		} else {
+			findViewById(R.id.dawn_background).setOnClickListener(this);
+			dismissbutton.setVisibility(View.GONE);
+		}
+
 		Calendar alarmStart = AlarmReceiver.getAlarmStart(pref);
 
 		long dawnStartMillis = alarmStart.getTimeInMillis();
@@ -129,8 +142,10 @@ public class Dawn extends Activity implements OnClickListener {
 	 */
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		endDawn();
-		this.finish();
+		if (!m_dismissbutton) {
+			endDawn();
+			this.finish();
+		}
 		return super.onKeyDown(keyCode, event);
 	}
 
