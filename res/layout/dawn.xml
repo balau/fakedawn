@@ -13,4 +13,14 @@
         android:textColor="#000000"
         android:textSize="70dp" />
 
+    <Button
+        android:text="@string/dismiss"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/dismiss_button"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginTop="48dp"
+        android:textSize="30sp"
+        android:textColor="@android:color/darker_gray" />
+
 </LinearLayout>

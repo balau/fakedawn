@@ -123,6 +123,25 @@
                 android:textOn="Activated with Sound" />
 
             <TextView
+                android:text="Dismiss method"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/textView"
+                android:textAppearance="@android:style/TextAppearance.Holo.Medium"
+                android:gravity="center_horizontal"
+                android:layout_marginTop="20dp" />
+
+            <ToggleButton
+                android:text="ToggleButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/toggleButtonUseDismiss"
+                android:textOff="Touch the screen"
+                android:textOn="Press dismiss button"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp" />
+
+            <TextView
                 android:id="@+id/textView5"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
